@@ -729,6 +729,7 @@ function focarItemInicial() {
 
 document.addEventListener('keydown', (e) => {
     const focused = document.activeElement;
+    const playerToggleBtn = document.getElementById('playerToggleBtn');
 
     const loadMoreBtn = document.getElementById('loadMoreBtn');
     if (loadMoreBtn && focused === loadMoreBtn) {
@@ -758,23 +759,56 @@ document.addEventListener('keydown', (e) => {
             atualizarEstadosVisuaisNasListas();
         }
 
-        const playerBtn = document.querySelector('.player-main-btn');
-        if (playerBtn) {
-            playerBtn.focus();
-            playerBtn.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        if (playerToggleBtn) {
+            playerToggleBtn.focus();
+            playerToggleBtn.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
         }
         return;
     }
 
     if (!focused) return;
 
+    // --- NOVO: Gestão de Foco quando estamos no Botão Play do Rodapé ---
+// --- Gestão de Foco quando estamos no Botão Play do Rodapé ---
+    if (playerToggleBtn && focused === playerToggleBtn) {
+        if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            
+            // Vamos procurar o botão de pesquisa de forma abrangente para garantir que o encontra
+            const btnPesquisar = document.querySelector('.btn-pesquisar') || document.getElementById('searchBtn') || document.querySelector('.sidebar-tv button:last-of-type');
+            
+            if (btnPesquisar) {
+                btnPesquisar.focus();
+                btnPesquisar.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+            } else {
+                console.warn("Botão de pesquisa não encontrado para devolver o foco.");
+            }
+            return; 
+        } 
+        
+        if (e.key === 'ArrowRight') {
+            e.preventDefault();
+            const primeiroCard = document.querySelector('#searchResultsList .radio-row-card');
+            if (primeiroCard) primeiroCard.focus();
+            return; 
+        }
+    }
+
     if (focused.closest('.sidebar-tv')) {
         const sidebarElements = Array.from(document.querySelectorAll('.sidebar-tv select, .sidebar-tv input, .sidebar-tv button'));
         const currentIndex = sidebarElements.indexOf(focused);
 
-        if (e.key === 'ArrowDown' && currentIndex < sidebarElements.length - 1) {
+        if (e.key === 'ArrowDown') {
             e.preventDefault();
-            sidebarElements[currentIndex + 1].focus();
+            if (currentIndex < sidebarElements.length - 1) {
+                sidebarElements[currentIndex + 1].focus();
+            } else {
+                // --- NOVO: Se estiver no último elemento da sidebar (Pesquisar), desce para o Player no rodapé! ---
+                if (playerToggleBtn) {
+                    playerToggleBtn.focus();
+                    playerToggleBtn.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+                }
+            }
         } else if (e.key === 'ArrowUp' && currentIndex > 0) {
             e.preventDefault();
             sidebarElements[currentIndex - 1].focus();

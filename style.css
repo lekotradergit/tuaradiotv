@@ -47,7 +47,7 @@ body, html {
     grid-area: sidebar;
     display: flex;
     flex-direction: column;
-    gap: 5px;
+    gap: 6px;
     padding: 8px;
     height: 100%;
     background-color: transparent;
@@ -77,7 +77,7 @@ body, html {
 .filters-area {
     display: flex;
     flex-direction: column;
-    gap: 5px;
+    gap: 6px;
     flex: 1;
 }
 
@@ -128,6 +128,50 @@ body, html {
     color: #ffffff;
     padding: 6px;
 }
+
+/* --- 1. Selects e Inputs com Filtro Ativo --- */
+.sidebar-tv select.filtro-ativo,
+.sidebar-tv input[type="text"].filtro-ativo {
+    border-color: #f39c12 !important;
+    background-color: rgba(243, 156, 18, 0.2) !important;
+    color: #f39c12 !important;
+    font-weight: bold;
+}
+
+/* --- 2. Prioridade de Foco: Quando qualquer input/select ganha foco, a borda fica verde --- */
+.sidebar-tv select:focus,
+.sidebar-tv input[type="text"]:focus,
+.sidebar-tv select.filtro-ativo:focus,
+.sidebar-tv input[type="text"].filtro-ativo:focus {
+    border-color: #2ecc71 !important; /* Borda verde de foco */
+    background-color: rgba(46, 204, 113, 0.15) !important;
+    color: #ffffff !important;
+    outline: none;
+}
+
+/* --- 3. Padrão dos Botões da Barra Lateral --- */
+.sidebar-tv button,
+.sidebar-tv .btn-acao {
+    background-color: #1a1a1a !important;
+    color: #ffffff !important;
+    border: 2px solid #333333 !important;
+    border-radius: 6px;
+    font-weight: bold;
+    transition: all 0.2s ease;
+}
+
+/* --- 4. Foco nos Botões (Borda Verde) --- */
+.sidebar-tv button:focus,
+.sidebar-tv button.focado,
+.sidebar-tv .btn-acao:focus {
+    border-color: #2ecc71 !important; /* Borda verde solicitada */
+    background-color: rgba(46, 204, 113, 0.25) !important;
+    color: #ffffff !important;
+    outline: none;
+}
+
+
+
 
 .search-input-wrapper {
     display: flex;
@@ -371,7 +415,7 @@ body, html {
     background-color: rgba(29, 185, 84, 0.2) !important;
 }
 
-/* --- Player Inferior (Normal na área do Player) --- */
+/* --- Player Inferior Consolidado --- */
 .player-tv {
     grid-area: player;
     background: linear-gradient(180deg, rgba(20, 15, 10, 0.95) 0%, rgba(10, 7, 4, 0.98) 100%);
@@ -379,10 +423,38 @@ body, html {
     border-radius: 8px;
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    gap: 14px;
     padding: 0 16px;
     backdrop-filter: blur(10px);
     height: 100%;
+}
+
+/* Botão Play Único, Posicionado no Rodapé à Esquerda das Informações */
+#playerToggleBtn {
+    background-color: rgba(243, 156, 18, 0.15) !important;
+    color: #ff9800;
+    border: 2px solid #ff9800;
+    font-size: 1rem;
+    cursor: pointer;
+    border-radius: 8px;
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    min-height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    outline: none;
+    flex-shrink: 0;
+    transition: all 0.2s;
+}
+
+#playerToggleBtn:focus {
+    background-color: rgba(29, 185, 84, 0.25) !important;
+    border-color: #1db954 !important;
+    color: #1db954 !important;
+    box-shadow: 0 0 10px rgba(29, 185, 84, 0.6);
+    transform: scale(1.05);
 }
 
 .player-info-container {
@@ -391,7 +463,6 @@ body, html {
     gap: 2px;
     min-width: 0;
     flex: 1;
-    padding-right: 15px;
 }
 
 .player-badge {
@@ -455,33 +526,4 @@ body, html {
     color: #e5e5e5;
     font-weight: 600;
     text-transform: uppercase;
-}
-
-/* Botão Play centralizado perfeitamente no player inferior e dimensionado com segurança */
-#playerToggleBtn {
-    background-color: rgba(243, 156, 18, 0.15) !important;
-    color: #ff9800;
-    border: 2px solid #ff9800;
-    font-size: 1rem;
-    cursor: pointer;
-    border-radius: 8px;
-    width: 42px;
-    height: 42px;
-    min-width: 42px;
-    min-height: 42px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    outline: none;
-    flex-shrink: 0;
-    margin-left: 12px;
-    transition: all 0.2s;
-}
-
-#playerToggleBtn:focus {
-    background-color: rgba(29, 185, 84, 0.25) !important;
-    border-color: #1db954 !important;
-    color: #1db954 !important;
-    box-shadow: 0 0 10px rgba(29, 185, 84, 0.6);
-    transform: scale(1.08);
 }
