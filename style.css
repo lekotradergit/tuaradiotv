@@ -20,13 +20,13 @@ body, html {
     background: url('FundoDarkRadio.png') no-repeat center center fixed;
     background-size: cover;
     display: grid;
-    /* Ajuste exato: Barra lateral com 360px fixos e o restante (1fr) dedicado às listas */
-    grid-template-columns: 360px 1fr;
-    grid-template-rows: 1fr 100px;
+    /* Proporção ideal para TV: Sidebar com 340px e listas ocupando o resto (1fr) */
+    grid-template-columns: 340px 1fr;
+    grid-template-rows: 1fr 90px;
     grid-template-areas: 
         "sidebar content"
         "player player";
-    padding: 20px;
+    padding: 15px;
     gap: 15px;
 }
 
@@ -48,8 +48,8 @@ body, html {
     grid-area: sidebar;
     display: flex;
     flex-direction: column;
-    gap: 12px;
-    padding: 20px;
+    gap: 10px;
+    padding: 15px;
     box-sizing: border-box;
     height: 100%;
     background-color: transparent;
@@ -59,100 +59,43 @@ body, html {
 }
 
 .sidebar-header {
-    margin-bottom: 4px;
+    margin-bottom: 2px;
     text-align: left;
 }
 
 .sidebar-title {
     color: #ff9800;
-    font-size: 20px;
+    font-size: 18px;
     font-weight: bold;
     margin: 0;
 }
 
 .sidebar-subtitle {
     color: #b0b0b0;
-    font-size: 12px;
-    margin: 4px 0 0 0;
-}
-
-.tv-input {
-    width: 100%;
-    padding: 12px 16px;
-    font-size: 15px;
-    background-color: transparent;
-    color: #ffffff;
-    border: 2px solid #444444;
-    border-radius: 8px;
-    outline: none;
-    box-sizing: border-box;
-    transition: border-color 0.2s, background-color 0.2s;
-}
-
-.tv-btn-mic {
-    background-color: transparent;
-    cursor: pointer;
-    text-align: center;
-    font-weight: bold;
-    font-size: 20px;
-}
-
-.sidebar-tv select:focus,
-.sidebar-tv input:focus,
-.sidebar-tv button:focus {
-    border-color: #28a745 !important;
-    background-color: rgba(40, 167, 69, 0.08) !important;
-    outline: none;
-}
-
-.tv-btn-action {
-    background-color: transparent;
-    cursor: pointer;
-    font-weight: bold;
-    color: #ffffff;
-    border-color: #444444;
-    font-size: 20px;
-}
-
-.sidebar-footer {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    flex-grow: 1;
-    width: 100%;
-}
-
-.logo-area h1 {
-    font-size: 20px;
-    color: #f39c12;
-}
-
-.logo-area p {
     font-size: 11px;
-    color: #bbb;
+    margin: 2px 0 0 0;
 }
 
 .filters-area {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 8px;
     flex: 1;
 }
 
 .filter-group {
     display: flex;
     flex-direction: column;
-    gap: 3px;
+    gap: 2px;
 }
 
 .filter-group label, 
 .sidebar-tv label, 
 .sidebar-tv .filter-label {
-    font-size: 1rem;
+    font-size: 0.85rem;
     font-weight: bold;
     color: #b3b3b3;
-    margin-bottom: 4px;
+    margin-bottom: 2px;
     letter-spacing: 0.5px;
     text-transform: uppercase;
 }
@@ -165,9 +108,9 @@ body, html {
     background: rgba(0, 0, 0, 0.6);
     border: 2px solid #333333;
     color: #fff;
-    padding: 12px 14px;
+    padding: 10px 12px;
     border-radius: 8px;
-    font-size: 1.1rem;
+    font-size: 0.95rem;
     outline: none;
     transition: border-color 0.2s, background-color 0.2s, box-shadow 0.2s;
 }
@@ -179,13 +122,13 @@ body, html {
     border-color: #1db954;
     background-color: #242424;
     outline: none;
-    box-shadow: 0 0 10px rgba(29, 185, 84, 0.4);
+    box-shadow: 0 0 8px rgba(29, 185, 84, 0.4);
 }
 
 .sidebar-tv select option {
     background-color: #181818;
     color: #ffffff;
-    padding: 12px;
+    padding: 10px;
 }
 
 .search-input-wrapper {
@@ -201,10 +144,10 @@ body, html {
     background: rgba(0, 0, 0, 0.6);
     border: 2px solid #333333;
     color: white;
-    padding: 0 14px;
+    padding: 0 12px;
     border-radius: 8px;
     cursor: pointer;
-    font-size: 1.1rem;
+    font-size: 1rem;
     transition: border-color 0.2s, background-color 0.2s;
 }
 
@@ -212,26 +155,21 @@ body, html {
     border-color: #1db954;
     background-color: #242424;
     outline: none;
-    box-shadow: 0 0 10px rgba(29, 185, 84, 0.4);
 }
 
 .btn-secondary {
     width: 100%;
     background: rgba(255, 255, 255, 0.08);
     color: #ddd;
-    padding: 12px 14px;
-    font-size: 1.1rem;
+    padding: 10px 12px;
+    font-size: 0.95rem;
     font-weight: bold;
     border-radius: 8px;
     cursor: pointer;
     border: 2px solid #333333;
-    transition: transform 0.1s, border-color 0.2s, background-color 0.2s, box-shadow 0.2s;
+    transition: transform 0.1s, border-color 0.2s, background-color 0.2s;
     box-sizing: border-box;
     text-transform: uppercase;
-}
-
-.btn-secondary:hover {
-    background: rgba(255, 255, 255, 0.15);
 }
 
 .btn-secondary:focus {
@@ -240,7 +178,6 @@ body, html {
     color: #ffffff !important;
     outline: none !important;
     transform: scale(1.02);
-    box-shadow: 0 0 10px rgba(29, 185, 84, 0.4) !important;
 }
 
 .btn-pesquisar {
@@ -248,18 +185,14 @@ body, html {
     background-color: #f39c12;
     color: #111111;
     border: 2px solid #333333;
-    padding: 12px 14px;
+    padding: 10px 12px;
     border-radius: 8px;
-    font-size: 1.1rem;
+    font-size: 0.95rem;
     font-weight: bold;
     cursor: pointer;
     text-transform: uppercase;
-    transition: transform 0.1s, border-color 0.2s, background-color 0.2s, box-shadow 0.2s;
+    transition: transform 0.1s, border-color 0.2s, background-color 0.2s;
     box-sizing: border-box;
-}
-
-.btn-pesquisar:hover {
-    background-color: #e67e22;
 }
 
 .btn-pesquisar:focus {
@@ -268,7 +201,6 @@ body, html {
     color: #111111 !important;
     outline: none !important;
     transform: scale(1.02);
-    box-shadow: 0 0 12px rgba(29, 185, 84, 0.6) !important;
 }
 
 /* --- Área Central com Duas Listas Lado a Lado --- */
@@ -296,8 +228,8 @@ body, html {
 
 .panel-header {
     background: rgba(0, 0, 0, 0.2);
-    padding: 12px 15px;
-    font-size: 1.1rem;
+    padding: 10px 14px;
+    font-size: 1rem;
     font-weight: 700;
     color: #e5e5e5;
     border-bottom: 1px solid #333;
@@ -309,8 +241,8 @@ body, html {
 .count-badge,
 .station-count-badge,
 .search-count {
-    font-size: 0.9rem;
-    padding: 4px 10px;
+    font-size: 0.85rem;
+    padding: 3px 8px;
     background-color: rgba(255, 255, 255, 0.1);
     border-radius: 20px;
     font-weight: bold;
@@ -330,8 +262,8 @@ body, html {
     background: transparent;
     border: none;
     color: #aaa;
-    padding: 12px 8px;
-    font-size: 1rem;
+    padding: 10px 6px;
+    font-size: 0.9rem;
     font-weight: bold;
     cursor: pointer;
     border-bottom: 3px solid transparent;
@@ -354,7 +286,7 @@ body, html {
 .radio-list-tv {
     flex: 1;
     overflow-y: auto;
-    padding: 12px;
+    padding: 10px;
     display: flex;
     flex-direction: column;
     gap: 8px;
@@ -368,12 +300,12 @@ body, html {
     border-radius: 3px;
 }
 
-/* --- Cartões de Rádio Originais e Proporcionais --- */
+/* --- Cartões de Rádio Otimizados para TV --- */
 .radio-row-card {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 14px 18px;
+    padding: 10px 14px;
     background-color: #181818;
     border: 2px solid transparent;
     border-radius: 8px;
@@ -389,9 +321,9 @@ body, html {
 }
 
 .radio-row-info h4 {
-    font-size: 1.1rem;
+    font-size: 0.95rem;
     color: #ffffff;
-    margin: 0 0 4px 0;
+    margin: 0 0 2px 0;
     font-weight: 600;
     white-space: nowrap;
     overflow: hidden;
@@ -399,7 +331,7 @@ body, html {
 }
 
 .radio-row-info p {
-    font-size: 0.9rem;
+    font-size: 0.8rem;
     color: #b3b3b3;
     margin: 0;
     white-space: nowrap;
@@ -412,24 +344,25 @@ body, html {
     outline: none;
     background-color: #282828;
     border-color: #1db954;
+    transform: scale(1.01);
 }
 
 .radio-row-actions {
     display: flex;
-    gap: 8px;
+    gap: 6px;
     align-items: center;
     flex-shrink: 0;
 }
 
 .circle-indicator {
-    width: 36px;
-    height: 36px;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
     background-color: rgba(255, 255, 255, 0.1);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1rem;
+    font-size: 0.9rem;
 }
 
 .radio-row-card:focus .circle-indicator,
@@ -442,9 +375,9 @@ body, html {
     background: rgba(255, 255, 255, 0.08);
     border: 2px solid transparent;
     outline: none;
-    font-size: 1rem; 
-    width: 36px;
-    height: 36px;
+    font-size: 0.9rem; 
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -454,7 +387,6 @@ body, html {
 
 .fav-btn.favorito {
     color: #f1c40f;
-    font-size: 1.2rem;
 }
 
 .fav-btn:focus {
@@ -482,11 +414,11 @@ body, html {
 }
 
 .player-badge {
-    font-size: 10px;
+    font-size: 9px;
     text-transform: uppercase;
     background: #e67e22;
     color: white;
-    padding: 2px 8px;
+    padding: 2px 6px;
     border-radius: 4px;
     width: fit-content;
     font-weight: bold;
@@ -496,18 +428,18 @@ body, html {
     display: flex;
     flex-direction: row;
     align-items: baseline;
-    gap: 12px;
+    gap: 10px;
 }
 
 .player-details h3 {
-    font-size: 1.2rem;
+    font-size: 1.05rem;
     color: #ffffff;
     font-weight: 700;
     margin: 0;
 }
 
 .player-details p {
-    font-size: 1rem;
+    font-size: 0.9rem;
     color: #f39c12;
     margin: 0;
 }
@@ -515,22 +447,22 @@ body, html {
 .player-status-badge {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
     background: rgba(0, 0, 0, 0.4);
     border: 1px solid rgba(255, 255, 255, 0.1);
-    padding: 8px 14px;
+    padding: 6px 12px;
     border-radius: 16px;
 }
 
 .status-dot {
-    width: 8px;
-    height: 8px;
+    width: 7px;
+    height: 7px;
     background-color: #f39c12;
     border-radius: 50%;
 }
 
 .player-status-text {
-    font-size: 1rem;
+    font-size: 0.9rem;
     color: #e5e5e5;
     font-weight: 600;
     text-transform: uppercase;
@@ -540,11 +472,11 @@ body, html {
     background-color: #ff9800 !important;
     color: #111111;
     border: 2px solid #ff9800;
-    font-size: 20px;
+    font-size: 18px;
     cursor: pointer;
     border-radius: 10px;
-    width: 50px;
-    height: 50px;
+    width: 44px;
+    height: 44px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -553,37 +485,4 @@ body, html {
 
 #playerToggleBtn:focus {
     border-color: #28a745 !important;
-}
-
-.loading-msg {
-    font-size: 12px;
-    color: #888;
-    text-align: center;
-    padding: 20px;
-}
-
-.filtro-ativo {
-    color: #ff9800 !important;
-    border-color: #ff9800 !important;
-}
-
-#searchResultsContainer, .search-results-wrapper {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    overflow-y: auto;
-}
-
-#loadMoreBtn {
-    margin: 15px auto;
-    display: block;
-    width: 90%;
-    max-width: 300px;
-    padding: 10px;
-    background-color: #d39e00;
-    color: #121212;
-    border: none;
-    border-radius: 6px;
-    font-weight: bold;
-    cursor: pointer;
 }
