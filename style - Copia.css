@@ -20,8 +20,9 @@ body, html {
     background: url('FundoDarkRadio.png') no-repeat center center fixed;
     background-size: cover;
     display: grid;
+    /* Painel lateral fixado exatamente em 20% e o resto distribuído pelas colunas */
     grid-template-columns: 20% 1fr;
-    grid-template-rows: 1fr 65px;
+    grid-template-rows: 1fr 62px;
     grid-template-areas: 
         "sidebar content"
         "player player";
@@ -117,10 +118,10 @@ body, html {
 .sidebar-tv input[type="text"]:focus,
 .filter-group select:focus, 
 .filter-group input:focus {
-    border-color: #1db954 !important;
-    background-color: rgba(29, 185, 84, 0.15) !important;
-    outline: none !important;
-    box-shadow: 0 0 6px rgba(29, 185, 84, 0.5);
+    border-color: #1db954;
+    background-color: #242424;
+    outline: none;
+    box-shadow: 0 0 5px rgba(29, 185, 84, 0.4);
 }
 
 .sidebar-tv select option {
@@ -160,28 +161,26 @@ body, html {
     box-sizing: border-box;
     text-transform: uppercase;
     text-align: center;
-    background: rgba(0, 0, 0, 0.5);
+}
+
+.btn-secondary {
+    background: rgba(255, 255, 255, 0.08);
     color: #ddd;
-    transition: all 0.2s;
 }
 
 .btn-pesquisar {
-    background-color: rgba(243, 156, 18, 0.2);
-    color: #f39c12;
-    border-color: #f39c12;
+    background-color: #f39c12;
+    color: #111111;
 }
 
 .btn-secondary:focus,
 .btn-pesquisar:focus {
-    background-color: rgba(29, 185, 84, 0.2) !important;
     border-color: #1db954 !important;
-    color: #ffffff !important;
     outline: none !important;
-    box-shadow: 0 0 8px rgba(29, 185, 84, 0.6);
     transform: scale(1.02);
 }
 
-/* --- Área Central (Listas Lado a Lado) --- */
+/* --- Área Central (Listas Lado a Lado Ocupando o Restante) --- */
 .content-tv-dual {
     grid-area: content;
     display: grid;
@@ -255,7 +254,7 @@ body, html {
 
 .tab-btn:focus {
     outline: none;
-    background-color: rgba(29, 185, 84, 0.15);
+    background-color: #282828;
     color: #ffffff;
     border-color: #1db954;
 }
@@ -319,7 +318,7 @@ body, html {
 .radio-row-card:focus,
 .radio-row-card:focus-visible {
     outline: none;
-    background-color: rgba(29, 185, 84, 0.12);
+    background-color: #282828;
     border-color: #1db954;
     transform: scale(1.01);
 }
@@ -367,11 +366,11 @@ body, html {
 }
 
 .fav-btn:focus {
-    border-color: #1db954 !important;
-    background-color: rgba(29, 185, 84, 0.2) !important;
+    border-color: #ff9800 !important;
+    background-color: rgba(255, 152, 0, 0.3) !important;
 }
 
-/* --- Player Inferior (Normal na área do Player) --- */
+/* --- Player Inferior --- */
 .player-tv {
     grid-area: player;
     background: linear-gradient(180deg, rgba(20, 15, 10, 0.95) 0%, rgba(10, 7, 4, 0.98) 100%);
@@ -380,18 +379,17 @@ body, html {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 16px;
+    padding: 0 12px;
     backdrop-filter: blur(10px);
-    height: 100%;
 }
 
 .player-info-container {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 1px;
     min-width: 0;
     flex: 1;
-    padding-right: 15px;
+    padding-right: 10px;
 }
 
 .player-badge {
@@ -409,7 +407,7 @@ body, html {
     display: flex;
     flex-direction: row;
     align-items: baseline;
-    gap: 8px;
+    gap: 6px;
     min-width: 0;
 }
 
@@ -451,37 +449,30 @@ body, html {
 }
 
 .player-status-text {
-    font-size: 0.7rem;
+    font-size: 0.75rem;
     color: #e5e5e5;
     font-weight: 600;
     text-transform: uppercase;
 }
 
-/* Botão Play centralizado perfeitamente no player inferior e dimensionado com segurança */
 #playerToggleBtn {
-    background-color: rgba(243, 156, 18, 0.15) !important;
-    color: #ff9800;
+    background-color: #ff9800 !important;
+    color: #111111;
     border: 2px solid #ff9800;
-    font-size: 1rem;
+    font-size: 14px;
     cursor: pointer;
-    border-radius: 8px;
-    width: 42px;
-    height: 42px;
-    min-width: 42px;
-    min-height: 42px;
+    border-radius: 6px;
+    width: 34px;
+    height: 34px;
     display: flex;
     align-items: center;
     justify-content: center;
     outline: none;
     flex-shrink: 0;
-    margin-left: 12px;
-    transition: all 0.2s;
+    margin-left: 10px;
 }
 
 #playerToggleBtn:focus {
-    background-color: rgba(29, 185, 84, 0.25) !important;
-    border-color: #1db954 !important;
-    color: #1db954 !important;
-    box-shadow: 0 0 10px rgba(29, 185, 84, 0.6);
-    transform: scale(1.08);
+    border-color: #28a745 !important;
+    transform: scale(1.05);
 }
