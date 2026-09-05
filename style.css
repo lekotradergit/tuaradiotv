@@ -1,0 +1,705 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body, html {
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    background-color: #111;
+    color: #fff;
+}
+
+.tv-container {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    background: url('FundoDarkRadio.png') no-repeat center center fixed;
+    background-size: cover;
+    display: grid;
+    grid-template-columns: 340px 1fr;
+    grid-template-rows: 1fr 100px;
+    grid-template-areas: 
+        "sidebar content"
+        "player player";
+    padding: 20px;
+    gap: 15px;
+}
+
+.tv-container::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(10, 5, 2, 0.78);
+    z-index: 0;
+}
+
+.tv-container > * {
+    position: relative;
+    z-index: 1;
+}
+
+/* --- Barra Lateral de Filtros para TV --- */
+
+.sidebar-tv {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 20px;
+    box-sizing: border-box;
+    height: 100%;
+    
+    /* Aplicação da borda e fundo transparente solicitados */
+    background-color: transparent; /* Fundo totalmente transparente */
+    /* border: 1px solid rgba(255, 255, 255, 0.15); /* Mesma borda discreta usada nos cartões da lista ao lado */
+    border: 1px solid rgba(243, 156, 18, 0.3);
+    border-radius: 12px; /* Cantos ligeiramente arredondados para combinar com o design */
+}
+
+/* Estilo do cabeçalho */
+.sidebar-header {
+    margin-bottom: 4px;
+    text-align: left;
+}
+
+.sidebar-title {
+    color: #ff9800;
+    font-size: 20px;
+    font-weight: bold;
+    margin: 0;
+}
+
+.sidebar-subtitle {
+    color: #b0b0b0;
+    font-size: 12px;
+    margin: 4px 0 0 0;
+}
+
+/* Estilo unificado para inputs e botões: fundo transparente com borda estilo lista */
+.tv-input {
+    width: 100%;
+    padding: 12px 16px;
+    font-size: 15px;
+    background-color: transparent; /* Fundo transparente solicitado */
+    color: #ffffff;
+    border: 2px solid #444444;    /* Borda padrão semelhante aos cartões */
+    border-radius: 8px;
+    outline: none;
+    box-sizing: border-box;
+    transition: border-color 0.2s, background-color 0.2s;
+}
+
+/* Estilos específicos para o botão de microfone */
+.tv-btn-mic {
+    background-color: transparent;
+    cursor: pointer;
+    text-align: center;
+    font-weight: bold;
+    font-size: 20px;
+}
+
+
+
+/* Padrão unificado de foco em verde para todos os elementos da barra lateral */
+.sidebar-tv select:focus,
+.sidebar-tv input:focus,
+.sidebar-tv button:focus {
+    border-color: #28a745 !important; /* Cor verde de foco */
+    background-color: rgba(40, 167, 69, 0.08) !important; /* Leve fundo translúcido esverdeado */
+    outline: none;
+}
+
+
+/* Botões de ação com destaque em laranja */
+.tv-btn-action {
+    background-color: transparent;
+    cursor: pointer;
+    font-weight: bold;
+    color: #ffffff; /* #ff9800;*/
+    border-color: #444444; /*#ff9800;*/
+font-size: 20px;
+}
+
+/* Rodapé flexível que centraliza o botão do player no meio do espaço vazio (horizontal e vertical) */
+.sidebar-footer {
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* Centraliza na vertical */
+    align-items: center;     /* Centraliza na horizontal */
+    flex-grow: 1;            /* Ocupa todo o espaço vertical livre restante */
+    width: 100%;
+}
+
+.logo-area h1 {
+    font-size: 20px;
+    color: #f39c12;
+}
+
+.logo-area p {
+    font-size: 11px;
+    color: #bbb;
+}
+
+.filters-area {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex: 1;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.filter-group label, 
+.sidebar-tv label, 
+.sidebar-tv .filter-label {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: #b3b3b3;
+    margin-bottom: 4px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+/* Caixas de Seleção (Selects) e Campo de Texto (Input) */
+.sidebar-tv select,
+.sidebar-tv input[type="text"],
+.filter-group select, 
+.filter-group input {
+    width: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    border: 2px solid #333333;
+    color: #fff;
+    padding: 14px 16px;
+    border-radius: 8px;
+    font-size: 1.25rem;
+    outline: none;
+    transition: border-color 0.2s, background-color 0.2s, box-shadow 0.2s;
+}
+
+.sidebar-tv select:focus,
+.sidebar-tv input[type="text"]:focus,
+.filter-group select:focus, 
+.filter-group input:focus {
+    border-color: #1db954;
+    background-color: #242424;
+    outline: none;
+    box-shadow: 0 0 10px rgba(29, 185, 84, 0.4);
+}
+
+
+/* ---  Cores das opções dentro da lista suspensa (Dropdown) --- */
+.sidebar-tv select option {
+    background-color: #181818;           /* Fundo escuro para a lista dropdown */
+    color: #ffffff;                      /* Cor padrão do texto das opções (branco) */
+    padding: 12px;
+}
+
+
+.search-input-wrapper {
+    display: flex;
+    gap: 5px;
+}
+
+.search-input-wrapper input {
+    flex: 1;
+}
+
+.search-input-wrapper button {
+    background: rgba(0, 0, 0, 0.6);
+    border: 2px solid #333333;
+    color: white;
+    padding: 0 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1.2rem;
+    transition: border-color 0.2s, background-color 0.2s;
+}
+
+.search-input-wrapper button:focus {
+    border-color: #1db954;
+    background-color: #242424;
+    outline: none;
+    box-shadow: 0 0 10px rgba(29, 185, 84, 0.4);
+}
+
+/* --- Botão "Limpar Filtros" --- */
+.btn-secondary {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.08);
+    color: #ddd;
+    padding: 14px 16px;
+    font-size: 1.25rem;
+    font-weight: bold;
+    border-radius: 8px;
+    cursor: pointer;
+    border: 2px solid #333333;
+    transition: transform 0.1s, border-color 0.2s, background-color 0.2s, box-shadow 0.2s;
+    box-sizing: border-box;
+    text-transform: uppercase;
+}
+
+.btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.btn-secondary:focus {
+    border-color: #1db954 !important;
+    background-color: rgba(29, 185, 84, 0.15) !important;
+    color: #ffffff !important;
+    outline: none !important;
+    transform: scale(1.02);
+    box-shadow: 0 0 10px rgba(29, 185, 84, 0.4) !important;
+}
+
+/* --- Botão "PESQUISAR" --- */
+.btn-pesquisar {
+    width: 100%;
+    background-color: #f39c12;
+    color: #111111;
+    border: 2px solid #333333;
+    padding: 14px 16px;
+    border-radius: 8px;
+    font-size: 1.25rem;
+    font-weight: bold;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: transform 0.1s, border-color 0.2s, background-color 0.2s, box-shadow 0.2s;
+    box-sizing: border-box;
+}
+
+.btn-pesquisar:hover {
+    background-color: #e67e22;
+}
+
+.btn-pesquisar:focus {
+    border-color: #1db954 !important;
+    background-color: #f39c12 !important;
+    color: #111111 !important;
+    outline: none !important;
+    transform: scale(1.02);
+    box-shadow: 0 0 12px rgba(29, 185, 84, 0.6) !important;
+}
+
+/* --- Botão Principal do Player (Com suporte garantido a foco por script/tecla voltar) --- */
+.sidebar-player-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin-top: 10px;
+    padding-top: 15px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    gap: 8px;
+}
+
+.player-main-btn {
+    background: #f39c12;
+    color: #111;
+    border: 2px solid transparent;
+    width: 75px;
+    height: 75px;
+    border-radius: 12px;
+    font-size: 40px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.1s, border-color 0.2s, background-color 0.2s, box-shadow 0.2s;
+}
+
+/* Estado de foco atende tanto a navegação natural quanto a chamada programática .focus() */
+.player-main-btn:focus,
+.player-main-btn:focus-visible {
+    border-color: #1db954 !important;
+    background-color: #f39c12 !important;
+    color: #111 !important;
+    outline: none !important;
+    transform: scale(1.05);
+    box-shadow: 0 0 12px rgba(29, 185, 84, 0.7) !important;
+}
+
+/* --- Área Central com Duas Listas Lado a Lado --- */
+.content-tv-dual {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    overflow: hidden;
+}
+
+.list-panel {    
+    background: rgba(20, 15, 10, 0.1);
+    border: 1px solid rgba(243, 156, 18, 0.3);
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    backdrop-filter: blur(8px);
+}
+
+.panel-header {
+    background: rgba(0, 0, 0, 0.1);
+    padding: 12px 15px;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #e5e5e5;
+    border-bottom: 1px solid #333;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    letter-spacing: 1px;
+}
+
+.count-badge,
+.station-count-badge,
+.search-count {
+    font-size: 1rem;
+    padding: 6px 12px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    font-weight: bold;
+    color: #1db954;
+}
+
+.tabs-header-dual,
+.tabs-container, 
+.secondary-tabs {
+    display: flex;
+    background: rgba(0, 0, 0, 0.1);
+    border-bottom: 1px solid #333;
+    gap: 0;
+}
+
+.tab-btn {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: #aaa;
+    padding: 12px 8px;
+    font-size: 1.15rem;
+    font-weight: bold;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+}
+
+.tab-btn.active {
+    color: #f39c12;
+    background: rgba(243, 156, 18, 0.08);
+    border-bottom-color: #1db954;
+}
+
+.tab-btn:focus {
+    outline: none;
+    background-color: #282828;
+    color: #ffffff;
+    border-color: #1db954;
+    transform: scale(1.02);
+}
+
+.radio-list-tv {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.radio-list-tv::-webkit-scrollbar {
+    width: 5px;
+}
+.radio-list-tv::-webkit-scrollbar-thumb {    
+    background: #444;
+    border-radius: 3px;
+}
+
+.radio-row-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 24px;
+    margin-bottom: 12px;
+    background-color: #181818;
+    border: 2px solid transparent;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s, border-color 0.2s;
+}
+
+.radio-row-info h4 {
+    font-size: 1.4rem;
+    color: #ffffff;
+    margin: 0 0 6px 0;
+    font-weight: 600;
+}
+
+.radio-row-info p {
+    font-size: 1.05rem;
+    color: #b3b3b3;
+    margin: 0;
+}
+
+.radio-row-card:focus,
+.radio-row-card:focus-visible {
+    outline: none;
+    background-color: #282828;
+    border-color: #1db954;
+    transform: scale(1.01);
+}
+
+.radio-row-card:focus-within {
+    border-color: #1db954;
+    background: rgba(29, 185, 84, 0.08);
+}
+
+.radio-row-actions {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+
+.circle-indicator {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+}
+
+.radio-row-card:focus .circle-indicator,
+.radio-row-card:focus-within .circle-indicator {
+    background-color: #1db954;
+    color: #000;
+}
+
+.radio-row-card.playing .circle-indicator {
+    background-color: #1db954;
+    color: #fff;
+}
+
+/* --- Estilo Base do Botão de Favorito --- */
+.fav-btn {
+    background: rgba(255, 255, 255, 0.08);
+    border: 2px solid transparent;
+    outline: none;
+    
+    /* Definimos um tamanho base menor para a estrela padrão */
+    font-size: 1.1rem; 
+    
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    cursor: pointer;
+    transition: transform 0.15s ease, background-color 0.15s ease, border-color 0.15s ease, font-size 0.15s ease;
+}
+
+/* --- ESTADO QUANDO ESTÁ FAVORITADA (Estrela Amarela Maior) --- */
+.fav-btn.favorito {
+    color: #f1c40f;         /* Cor dourada brilhante */
+    font-size: 1.5rem;      /* Aumenta o tamanho da estrela consideravelmente */
+}
+
+/* --- ESTADO DE FOCO PARA A TV --- */
+.fav-btn:focus {
+    border-color: #ff9800 !important;
+    background-color: rgba(255, 152, 0, 0.3) !important;
+    transform: scale(1.25) !important;
+    box-shadow: 0 0 14px #ff9800 !important;
+    z-index: 10;
+}
+
+.action-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+}
+
+.action-btn.play-listen {
+    background: #27ae60;
+}
+
+/* --- Player Inferior (Otimizado para TV) --- */
+.player-tv {
+    grid-area: player;
+    background: linear-gradient(180deg, rgba(20, 15, 10, 0.95) 0%, rgba(10, 7, 4, 0.98) 100%);
+    border: 1px solid rgba(243, 156, 18, 0.4);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 30px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+.player-info-container {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.player-badge {
+    font-size: 11px;
+    text-transform: uppercase;
+    background: #e67e22;
+    color: white;
+    padding: 3px 10px;
+    border-radius: 4px;
+    width: fit-content;
+    font-weight: bold;
+    letter-spacing: 0.8px;
+}
+
+/* Agrupamento em linha para o nome da rádio e metadados ficarem harmoniosos */
+.player-details {
+    display: flex;
+    flex-direction: row;
+    align-items: baseline;
+    gap: 15px;
+}
+
+.player-details h3 {
+    font-size: 1.6rem; /* Fonte maior para fácil leitura à distância na TV */
+    color: #ffffff;
+    font-weight: 700;
+    margin: 0;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.player-details p {
+    font-size: 1.2rem;
+    color: #f39c12;
+    margin: 0;
+    font-weight: 500;
+}
+
+/* Crachá de status elegante do lado direito */
+.player-status-badge {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 10px 18px;
+    border-radius: 20px;
+}
+
+.status-dot {
+    width: 10px;
+    height: 10px;
+    background-color: #f39c12;
+    border-radius: 50%;
+    box-shadow: 0 0 8px #f39c12;
+}
+
+.player-status-text {
+    font-size: 1.15rem;
+    color: #e5e5e5;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.loading-msg {
+    font-size: 12px;
+    color: #888;
+    text-align: center;
+    padding: 20px;
+}
+
+/* Estilo aplicado aos seletores e input de pesquisa quando possuem um filtro ativo */
+.filtro-ativo {
+    color: #ff9800 !important; /* Laranja vibrante ideal para visibilidade à distância na TV */
+    border-color: #ff9800 !important;
+}
+
+
+/* Garante que o contentor da lista de pesquisa acomoda o botão de forma limpa no fim */
+#searchResultsContainer, .search-results-wrapper {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow-y: auto;
+    padding-bottom: 20px; /* Dá folga para o botão não colar na borda */
+}
+
+/* Estilo recomendando para o botão Carregar Mais */
+#loadMoreBtn {
+    margin: 15px auto;
+    display: block;
+    width: 90%;
+    max-width: 300px;
+    padding: 12px;
+    background-color: #d39e00; /* ou a cor do teu tema */
+    color: #121212;
+    border: none;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    tab-index: 0; /* Garante que recebe foco por teclado/TV */
+}
+
+#loadMoreBtn:focus {
+    outline: 2px solid #28a745;
+    background-color: #ffc107;
+}
+
+/* Botão do player com fundo sólido e símbolos de play/pausa */
+#playerToggleBtn {
+    background-color: #ff9800 !important; /* Mantém o fundo sólido (cor de destaque original) */
+    color: #111111; /* Cor escura para o ícone contrastar perfeitamente no fundo sólido */
+    border: 2px solid #ff9800; /* Borda sólida inicial */
+    font-size: 24px;
+    cursor: pointer;
+    border-radius: 12px;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: border-color 0.2s;
+    outline: none;
+}
+
+/* Quando recebe o foco: o fundo continua sólido e apenas a borda fica verde */
+#playerToggleBtn:focus {
+    border-color: #28a745 !important; /* Apenas a borda muda para o verde de foco */
+    background-color: #ff9800 !important; /* Garante que o fundo sólido não se altera */
+    outline: none;
+}
+
+
+/* Animação para o botão de voz piscar durante a escuta */
+@keyframes pulse-voice {
+    0% { background-color: #e67e22; transform: scale(1); }
+    50% { background-color: #c0392b; transform: scale(1.05); }
+    100% { background-color: #e67e22; transform: scale(1); }
+}
+
+/* Classe dinâmica injetada via JavaScript */
+.voice-listening {
+    animation: pulse-voice 1.2s infinite ease-in-out;
+}
