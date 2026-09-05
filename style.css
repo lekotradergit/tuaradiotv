@@ -20,8 +20,8 @@ body, html {
     background: url('FundoDarkRadio.png') no-repeat center center fixed;
     background-size: cover;
     display: grid;
-    /* Reduzimos a lateral para 270px para dar mais folga às listas centrais */
-    grid-template-columns: 270px 1fr;
+    /* Painel lateral fixado exatamente em 20% e o resto distribuído pelas colunas */
+    grid-template-columns: 20% 1fr;
     grid-template-rows: 1fr 62px;
     grid-template-areas: 
         "sidebar content"
@@ -43,7 +43,7 @@ body, html {
     z-index: 1;
 }
 
-/* --- Barra Lateral de Filtros Otimizada --- */
+/* --- Barra Lateral de Filtros (20% da Tela) --- */
 .sidebar-tv {
     grid-area: sidebar;
     display: flex;
@@ -64,14 +64,14 @@ body, html {
 
 .sidebar-title {
     color: #ff9800;
-    font-size: 15px;
+    font-size: 14px;
     font-weight: bold;
     margin: 0;
 }
 
 .sidebar-subtitle {
     color: #b0b0b0;
-    font-size: 9px;
+    font-size: 8px;
     margin: 0;
 }
 
@@ -91,7 +91,7 @@ body, html {
 .filter-group label, 
 .sidebar-tv label, 
 .sidebar-tv .filter-label {
-    font-size: 0.7rem;
+    font-size: 0.65rem;
     font-weight: bold;
     color: #b3b3b3;
     margin-bottom: 1px;
@@ -107,9 +107,9 @@ body, html {
     background: rgba(0, 0, 0, 0.6);
     border: 2px solid #333333;
     color: #fff;
-    padding: 6px 8px;
+    padding: 5px 6px;
     border-radius: 6px;
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     outline: none;
     transition: border-color 0.2s, background-color 0.2s;
 }
@@ -143,17 +143,17 @@ body, html {
     background: rgba(0, 0, 0, 0.6);
     border: 2px solid #333333;
     color: white;
-    padding: 0 8px;
+    padding: 0 6px;
     border-radius: 6px;
     cursor: pointer;
-    font-size: 0.85rem;
+    font-size: 0.75rem;
 }
 
 .btn-secondary,
 .btn-pesquisar {
     width: 100%;
-    padding: 7px 8px;
-    font-size: 0.8rem;
+    padding: 6px;
+    font-size: 0.75rem;
     font-weight: bold;
     border-radius: 6px;
     cursor: pointer;
@@ -180,7 +180,7 @@ body, html {
     transform: scale(1.02);
 }
 
-/* --- Área Central (Listas Lado a Lado Mais Amplas) --- */
+/* --- Área Central (Listas Lado a Lado Ocupando o Restante) --- */
 .content-tv-dual {
     grid-area: content;
     display: grid;
@@ -276,7 +276,7 @@ body, html {
     border-radius: 2px;
 }
 
-/* --- Cartões de Rádio com Melhor Espaçamento --- */
+/* --- Cartões de Rádio --- */
 .radio-row-card {
     display: flex;
     align-items: center;
@@ -370,7 +370,7 @@ body, html {
     background-color: rgba(255, 152, 0, 0.3) !important;
 }
 
-/* --- Player Inferior Estreito e Alinhado --- */
+/* --- Player Inferior --- */
 .player-tv {
     grid-area: player;
     background: linear-gradient(180deg, rgba(20, 15, 10, 0.95) 0%, rgba(10, 7, 4, 0.98) 100%);
