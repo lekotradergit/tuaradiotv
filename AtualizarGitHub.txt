@@ -1,0 +1,44 @@
+Para atualizar a sua aplicação Tua Rádio TV no GitHub após fazer alterações no código do seu computador, o processo é feito através da linha de comandos (terminal) ou de um editor com suporte ao Git (como o VS Code).
+
+Como usamos o upload direto de ficheiros na primeira vez, agora que o repositório está conectado à Cloudflare, qualquer alteração que enviar para o GitHub será publicada automaticamente pela Cloudflare Pages!
+
+Aqui estão os passos e os comandos exatos para enviar as suas alterações:
+
+Panorama Geral do Processo
+O que vamos fazer: Indicar ao Git quais os ficheiros que foram modificados, registar essas alterações com uma mensagem descritiva e enviá-las para a nuvem do GitHub.
+
+Passos envolvidos: Abrir o terminal na pasta do projeto, adicionar os ficheiros alterados, criar um ponto de gravação (commit) e empurrar para o repositório remoto (push).
+
+Passo a Passo e Comandos
+Abra o terminal (ou a linha de comandos) na pasta onde estão guardados os ficheiros do seu projeto e execute os seguintes comandos um a um:
+
+1. Verificar o estado dos ficheiros
+Este comando mostra quais os ficheiros que foram alterados desde a última gravação.
+
+Bash
+git status
+Explicação: Vai ver os ficheiros modificados (como index.html, script.js ou style.css) a aparecer destacados a vermelho.
+
+2. Adicionar as alterações
+Para preparar todos os ficheiros modificados para o envio, utilize:
+
+Bash
+git add .
+Explicação: O ponto (.) significa "adicionar tudo o que foi alterado na pasta atual". Isto coloca os ficheiros na área de espera (staging area).
+
+3. Registar as alterações (Commit)
+Crie um ponto de gravação com uma mensagem curta que explique o que alterou no código:
+
+Bash
+git commit -m "Atualizacao de recursos e correcoes na aplicacao"
+Explicação: O parâmetro -m permite escrever uma mensagem descritiva. Isto serve para manter um histórico organizado do que mudou no código ao longo do tempo.
+
+4. Enviar para o GitHub (Push)
+Por fim, envie o código gravado para o seu repositório remoto no GitHub:
+
+Bash
+git push origin main
+Explicação: Este comando envia as novidades para a nuvem. (Nota: Se a sua branch principal se chamar master em vez de main, substitua por git push origin master).
+
+O que acontece a seguir?
+Assim que o comando git push terminar com sucesso, a Cloudflare Pages deteta automaticamente que houve uma atualização no GitHub, faz o novo deploy em poucos segundos e aplica as melhorias no ar para a sua Smart TV!

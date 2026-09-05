@@ -1,0 +1,554 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body, html {
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    background-color: #111;
+    color: #fff;
+}
+
+.tv-container {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    background: url('FundoDarkRadio.png') no-repeat center center fixed;
+    background-size: cover;
+    display: grid;
+    grid-template-columns: 340px 1fr;
+    grid-template-rows: 1fr 100px;
+    grid-template-areas: 
+        "sidebar content"
+        "player player";
+    padding: 20px;
+    gap: 15px;
+}
+
+.tv-container::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(10, 5, 2, 0.78);
+    z-index: 0;
+}
+
+.tv-container > * {
+    position: relative;
+    z-index: 1;
+}
+
+/* --- Barra Lateral de Filtros para TV --- */
+/* Estrutura principal da barra lateral em coluna */
+.sidebar-tv {
+    display: flex;
+    flex-direction: column;
+    gap: 12px; /* Espaço uniforme entre os elementos */
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+/* Estilo padrão unificado para todos os controlos da barra lateral */
+.tv-input {
+    width: 100%;
+    padding: 12px 16px;
+    font-size: 15px;
+    background-color: #2b2b2b;
+    color: #ffffff;
+    border: 2px solid #444444;
+    border-radius: 8px;
+    outline: none;
+    box-sizing: border-box;
+    transition: border-color 0.2s, background-color 0.2s;
+}
+
+/* Estilo visual específico para o botão de microfone com texto */
+.tv-btn-mic {
+    background-color: #333333;
+    cursor: pointer;
+    text-align: center;
+    font-weight: bold;
+}
+
+/* Botões de ação (Pesquisar / Limpar) */
+.tv-btn-action {
+    background-color: #1f1f1f;
+    cursor: pointer;
+    font-weight: bold;
+    color: #ff9800;
+    border-color: #ff9800;
+}
+
+/* Efeito visual claro quando qualquer elemento recebe o foco do controlo remoto */
+.sidebar-tv .tv-input:focus {
+    border-color: #28a745;
+    background-color: #383838;
+}
+
+.logo-area h1 {
+    font-size: 20px;
+    color: #f39c12;
+}
+
+.logo-area p {
+    font-size: 11px;
+    color: #bbb;
+}
+
+.filters-area {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex: 1;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.filter-group label, 
+.sidebar-tv label, 
+.sidebar-tv .filter-label {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: #b3b3b3;
+    margin-bottom: 4px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+/* Caixas de Seleção (Selects) e Campo de Texto (Input) */
+.sidebar-tv select,
+.sidebar-tv input[type="text"],
+.filter-group select, 
+.filter-group input {
+    width: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    border: 2px solid #333333;
+    color: #fff;
+    padding: 14px 16px;
+    border-radius: 8px;
+    font-size: 1.25rem;
+    outline: none;
+    transition: border-color 0.2s, background-color 0.2s, box-shadow 0.2s;
+}
+
+.sidebar-tv select:focus,
+.sidebar-tv input[type="text"]:focus,
+.filter-group select:focus, 
+.filter-group input:focus {
+    border-color: #1db954;
+    background-color: #242424;
+    outline: none;
+    box-shadow: 0 0 10px rgba(29, 185, 84, 0.4);
+}
+
+.search-input-wrapper {
+    display: flex;
+    gap: 5px;
+}
+
+.search-input-wrapper input {
+    flex: 1;
+}
+
+.search-input-wrapper button {
+    background: rgba(0, 0, 0, 0.6);
+    border: 2px solid #333333;
+    color: white;
+    padding: 0 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1.2rem;
+    transition: border-color 0.2s, background-color 0.2s;
+}
+
+.search-input-wrapper button:focus {
+    border-color: #1db954;
+    background-color: #242424;
+    outline: none;
+    box-shadow: 0 0 10px rgba(29, 185, 84, 0.4);
+}
+
+/* --- Botão "Limpar Filtros" --- */
+.btn-secondary {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.08);
+    color: #ddd;
+    padding: 14px 16px;
+    font-size: 1.25rem;
+    font-weight: bold;
+    border-radius: 8px;
+    cursor: pointer;
+    border: 2px solid #333333;
+    transition: transform 0.1s, border-color 0.2s, background-color 0.2s, box-shadow 0.2s;
+    box-sizing: border-box;
+    text-transform: uppercase;
+}
+
+.btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.btn-secondary:focus {
+    border-color: #1db954 !important;
+    background-color: rgba(29, 185, 84, 0.15) !important;
+    color: #ffffff !important;
+    outline: none !important;
+    transform: scale(1.02);
+    box-shadow: 0 0 10px rgba(29, 185, 84, 0.4) !important;
+}
+
+/* --- Botão "PESQUISAR" --- */
+.btn-pesquisar {
+    width: 100%;
+    background-color: #f39c12;
+    color: #111111;
+    border: 2px solid #333333;
+    padding: 14px 16px;
+    border-radius: 8px;
+    font-size: 1.25rem;
+    font-weight: bold;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: transform 0.1s, border-color 0.2s, background-color 0.2s, box-shadow 0.2s;
+    box-sizing: border-box;
+}
+
+.btn-pesquisar:hover {
+    background-color: #e67e22;
+}
+
+.btn-pesquisar:focus {
+    border-color: #1db954 !important;
+    background-color: #f39c12 !important;
+    color: #111111 !important;
+    outline: none !important;
+    transform: scale(1.02);
+    box-shadow: 0 0 12px rgba(29, 185, 84, 0.6) !important;
+}
+
+/* --- Botão Principal do Player (Com suporte garantido a foco por script/tecla voltar) --- */
+.sidebar-player-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin-top: 10px;
+    padding-top: 15px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    gap: 8px;
+}
+
+.player-main-btn {
+    background: #f39c12;
+    color: #111;
+    border: 2px solid transparent;
+    width: 75px;
+    height: 75px;
+    border-radius: 12px;
+    font-size: 28px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.1s, border-color 0.2s, background-color 0.2s, box-shadow 0.2s;
+}
+
+/* Estado de foco atende tanto a navegação natural quanto a chamada programática .focus() */
+.player-main-btn:focus,
+.player-main-btn:focus-visible {
+    border-color: #1db954 !important;
+    background-color: #f39c12 !important;
+    color: #111 !important;
+    outline: none !important;
+    transform: scale(1.05);
+    box-shadow: 0 0 12px rgba(29, 185, 84, 0.7) !important;
+}
+
+/* --- Área Central com Duas Listas Lado a Lado --- */
+.content-tv-dual {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    overflow: hidden;
+}
+
+.list-panel {
+    background: rgba(20, 15, 10, 0.85);
+    border: 1px solid rgba(243, 156, 18, 0.3);
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    backdrop-filter: blur(8px);
+}
+
+.panel-header {
+    background: rgba(0, 0, 0, 0.5);
+    padding: 12px 15px;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #e5e5e5;
+    border-bottom: 1px solid #333;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    letter-spacing: 1px;
+}
+
+.count-badge,
+.station-count-badge,
+.search-count {
+    font-size: 1rem;
+    padding: 6px 12px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    font-weight: bold;
+    color: #1db954;
+}
+
+.tabs-header-dual,
+.tabs-container, 
+.secondary-tabs {
+    display: flex;
+    background: rgba(0, 0, 0, 0.5);
+    border-bottom: 1px solid #333;
+    gap: 0;
+}
+
+.tab-btn {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: #aaa;
+    padding: 12px 8px;
+    font-size: 1.15rem;
+    font-weight: bold;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+}
+
+.tab-btn.active {
+    color: #f39c12;
+    background: rgba(243, 156, 18, 0.08);
+    border-bottom-color: #1db954;
+}
+
+.tab-btn:focus {
+    outline: none;
+    background-color: #282828;
+    color: #ffffff;
+    border-color: #1db954;
+    transform: scale(1.02);
+}
+
+.radio-list-tv {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.radio-list-tv::-webkit-scrollbar {
+    width: 5px;
+}
+.radio-list-tv::-webkit-scrollbar-thumb {
+    background: #444;
+    border-radius: 3px;
+}
+
+.radio-row-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 24px;
+    margin-bottom: 12px;
+    background-color: #181818;
+    border: 2px solid transparent;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s, border-color 0.2s;
+}
+
+.radio-row-info h4 {
+    font-size: 1.4rem;
+    color: #ffffff;
+    margin: 0 0 6px 0;
+    font-weight: 600;
+}
+
+.radio-row-info p {
+    font-size: 1.05rem;
+    color: #b3b3b3;
+    margin: 0;
+}
+
+.radio-row-card:focus,
+.radio-row-card:focus-visible {
+    outline: none;
+    background-color: #282828;
+    border-color: #1db954;
+    transform: scale(1.01);
+}
+
+.radio-row-card:focus-within {
+    border-color: #1db954;
+    background: rgba(29, 185, 84, 0.08);
+}
+
+.radio-row-actions {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+
+.circle-indicator {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+}
+
+.radio-row-card:focus .circle-indicator,
+.radio-row-card:focus-within .circle-indicator {
+    background-color: #1db954;
+    color: #000;
+}
+
+.radio-row-card.playing .circle-indicator {
+    background-color: #1db954;
+    color: #fff;
+}
+
+.action-btn.fav-btn {
+    background: transparent;
+    border: none;
+    font-size: 1.8rem;
+    cursor: pointer;
+    padding: 0 10px;
+    color: #ffffff;
+}
+
+.action-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+}
+
+.action-btn.play-listen {
+    background: #27ae60;
+}
+
+/* --- Player Inferior --- */
+.player-tv {
+    grid-area: player;
+    background: rgba(15, 10, 5, 0.95);
+    border: 1px solid rgba(243, 156, 18, 0.4);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    backdrop-filter: blur(10px);
+}
+
+.player-badge {
+    font-size: 11px;
+    text-transform: uppercase;
+    background: #e67e22;
+    color: white;
+    padding: 3px 8px;
+    border-radius: 4px;
+    width: fit-content;
+    font-weight: bold;
+    margin-bottom: 4px;
+    letter-spacing: 0.5px;
+}
+
+.player-details {
+    `display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.player-details h3 {
+    font-size: 1.35rem;
+    color: #fff;
+    font-weight: 600;
+}
+
+.player-details p {
+    font-size: 1.05rem;
+    color: #f39c12;
+}
+
+.player-status-text {
+    font-size: 1.1rem;
+    color: #aaa;
+}
+
+.loading-msg {
+    font-size: 12px;
+    color: #888;
+    text-align: center;
+    padding: 20px;
+}
+
+/* Estilo aplicado aos seletores e input de pesquisa quando possuem um filtro ativo */
+.filtro-ativo {
+    color: #ff9800 !important; /* Laranja vibrante ideal para visibilidade à distância na TV */
+    border-color: #ff9800 !important;
+}
+
+
+/* Garante que o contentor da lista de pesquisa acomoda o botão de forma limpa no fim */
+#searchResultsContainer, .search-results-wrapper {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow-y: auto;
+    padding-bottom: 20px; /* Dá folga para o botão não colar na borda */
+}
+
+/* Estilo recomendando para o botão Carregar Mais */
+#loadMoreBtn {
+    margin: 15px auto;
+    display: block;
+    width: 90%;
+    max-width: 300px;
+    padding: 12px;
+    background-color: #d39e00; /* ou a cor do teu tema */
+    color: #121212;
+    border: none;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    tab-index: 0; /* Garante que recebe foco por teclado/TV */
+}
+
+#loadMoreBtn:focus {
+    outline: 2px solid #28a745;
+    background-color: #ffc107;
+}

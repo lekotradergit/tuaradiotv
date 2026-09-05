@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tua Rádio TV</title>
+    <!-- Importação do arquivo de estilos CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="tv-container">
+        
+        <!-- ==========================================
+             BARRA LATERAL DE FILTROS E CONTROLOS (SIDEBAR)
+             ========================================== -->
+<div class="sidebar-tv">
+    <!-- Cabeçalho da barra lateral -->
+    <div class="sidebar-header">
+        <h2 class="sidebar-title">TUA RÁDIO TV</h2>
+        <p class="sidebar-subtitle">Encontre, Ouça, Curta</p>
+    </div>
+
+    <!-- Seletor de Géneros -->
+    <select id="genreSelect" class="tv-input" tabindex="0">
+        <option value="">Todos os géneros</option>
+    </select>
+
+    <!-- Seletor de Idiomas -->
+    <select id="languageSelect" class="tv-input" tabindex="0">
+        <option value="">Todos os idiomas</option>
+    </select>
+
+    <!-- Seletor de Países (posicionado acima da caixa de texto) -->
+    <select id="countrySelect" class="tv-input" tabindex="0">
+        <option value="">Todos os países</option>
+    </select>
+
+    <!-- Caixa de Texto para Pesquisa -->
+    <input type="text" id="searchInput" placeholder="Digite para pesquisar..." class="tv-input" tabindex="0" readonly>>
+
+    <!-- Botão de Microfone -->
+    <button id="micBtn" class="tv-input tv-btn-mic" tabindex="0">
+        🎤 Pesquisa por voz
+    </button>
+
+    <!-- Botões de Ação -->
+    <button id="clearFiltersBtn" class="tv-input tv-btn-action" tabindex="0">Limpar Filtros</button>    
+    <button id="searchBtn" class="tv-input tv-btn-action" tabindex="0">Pesquisar</button>
+
+    <!-- Rodapé com o botão do player centralizado horizontal e verticalmente -->
+    <div class="sidebar-footer">
+        <button id="playerToggleBtn" class="player-main-btn" tabindex="0">▶</button>
+    </div>
+</div>
+
+        <!-- ==========================================
+             ÁREA CENTRAL DE CONTEÚDO (DUAS LISTAS LADO A LADO)
+             ========================================== -->
+        <main class="content-tv-dual">
+            
+            <!-- Painel Esquerdo: Resultados da Pesquisa -->
+            <section class="list-panel">
+                <div class="panel-header">
+                    <span>Resultados da Pesquisa</span>
+                    <span class="count-badge" id="stationCount">0 estações</span>
+                </div>
+                <div class="radio-list-tv" id="searchResultsList">
+                    <!-- Os cartões de rádio dinâmicos aparecem aqui -->
+                </div>
+            </section>
+
+            <!-- Painel Direito: Recentes, Favoritos e Top Cliques -->
+            <section class="list-panel">
+                <div class="tabs-header-dual">
+                    <button class="tab-btn active" data-tab="recents">Recentes</button>
+                    <button class="tab-btn" data-tab="favorites">Favoritas</button>
+                    <button class="tab-btn" data-tab="top">Top Clique</button>
+                </div>
+                <div class="radio-list-tv" id="secondaryList">
+                    <!-- Os cartões secundários aparecem aqui -->
+                </div>
+            </section>
+
+        </main>
+
+        <!-- ==========================================
+             PLAYER INFERIOR (Apenas Informações e Estado)
+             ========================================== -->
+        <footer class="player-tv">
+            <div class="player-info-area">
+                <div class="player-badge">Tocando Agora</div>
+                <div class="player-details">
+                    <h3 id="currentStationName">Selecione uma rádio para começar</h3>
+                    <p id="currentStationMeta">🎵 Ao Vivo</p>
+                </div>
+            </div>
+            <div class="player-status-text" id="playerStatusText">Pronto</div>
+        </footer>
+
+    </div>
+
+    <!-- Elemento de áudio oculto para reprodução de streaming -->
+    <audio id="audioPlayer"></audio>
+
+    <!-- Importação do script principal de funcionamento -->
+    <script src="script.js"></script>
+</body>
+</html>
