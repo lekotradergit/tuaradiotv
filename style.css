@@ -527,3 +527,40 @@ body, html {
     font-weight: 600;
     text-transform: uppercase;
 }
+
+
+/* --- Estados do Status do Player no Rodapé (Cores Dinâmicas) --- */
+.player-status-text {
+    font-weight: bold;
+    letter-spacing: 0.5px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    display: inline-block;
+    transition: all 0.3s ease;
+}
+
+/* Estado: Erro (Vermelho) */
+.player-status-text.status-erro {
+    color: #ff4d4d !important;
+    text-shadow: 0 0 8px rgba(255, 77, 77, 0.4);
+}
+
+/* Estado: Pronto / No Ar (Verde) */
+.player-status-text.status-no-ar,
+.player-status-text.status-pronto {
+    color: #2ecc71 !important;
+    text-shadow: 0 0 8px rgba(46, 204, 113, 0.4);
+}
+
+/* Estado: Carregando / Bufferização (Laranja) */
+.player-status-text.status-carregando {
+    color: #f39c12 !important;
+    text-shadow: 0 0 8px rgba(243, 156, 18, 0.4);
+}
+
+/* Estado: Pausado (Branco) */
+.player-status-text.status-pausado {
+    color: #ffffff !important;
+    text-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
+}
+

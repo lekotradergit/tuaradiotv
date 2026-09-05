@@ -72,31 +72,76 @@ let radioAtualUrl = null;
 // ==========================================
 // Função Centralizada de Atualização do Status
 // ==========================================
-function atualizarStatusPlayer(mensagem) {
-    if (playerStatus) {
-        playerStatus.textContent = mensagem;
+function atualizarStatusPlayer(estado, mensagemCustomizada = '') {
+    if (!playerStatus) return;
+
+    // Remove todas as classes de estado anteriores para evitar conflitos
+    playerStatus.classList.remove('status-erro', 'status-no-ar', 'status-carregando', 'status-pausado');
+
+    switch (estado) {
+        case 'erro':
+            playerStatus.textContent = mensagemCustomizada || 'ERRO';
+            playerStatus.classList.add('status-erro');
+            break;
+        case 'no-ar':
+        case 'pronto':
+            playerStatus.textContent = mensagemCustomizada || 'PRONTO';
+            playerStatus.classList.add('status-no-ar'); // Mantém a classe verde
+            break;
+        case 'carregando':
+            playerStatus.textContent = mensagemCustomizada || 'CARREGANDO';
+            playerStatus.classList.add('status-carregando');
+            break;
+        case 'pausado':
+            playerStatus.textContent = mensagemCustomizada || 'PAUSADO';
+            playerStatus.classList.add('status-pausado');
+            break;
+        default:
+            playerStatus.textContent = mensagemCustomizada || 'PRONTO';
+            playerStatus.classList.add('status-pausado');
     }
+}
+
+// Monitorização Única e Centralizada dos Estados do Player de Áudio
+if (audioPlayer) {
+    audioPlayer.addEventListener('waiting', () => {
+        atualizarStatusPlayer('carregando', 'CARREGANDO');
+    });
+
+    audioPlayer.addEventListener('playing', () => {
+        atualizarStatusPlayer('pronto', 'PRONTO'); // Fonte única da verdade quando a rádio começa a tocar
+    });
+
+    audioPlayer.addEventListener('pause', () => {
+        if (audioPlayer.currentTime > 0 && !audioPlayer.seeking) {
+            atualizarStatusPlayer('pausado', 'PAUSADO');
+        }
+    });
+
+    audioPlayer.addEventListener('error', () => {
+        atualizarStatusPlayer('erro', 'ERRO');
+    });
 }
 
 // Monitorização dos Estados do Player de Áudio (Bufferização, Play, Pausa, Erros)
 if (audioPlayer) {
     audioPlayer.addEventListener('waiting', () => {
-        atualizarStatusPlayer("A BUFFERIZAR...");
+        atualizarStatusPlayer('carregando', 'CARREGANDO');
     });
 
     audioPlayer.addEventListener('playing', () => {
-        atualizarStatusPlayer("No AR");
+        atualizarStatusPlayer('no-ar', 'NO AR');
     });
 
     audioPlayer.addEventListener('pause', () => {
         // Só muda para pausado se não estivermos a iniciar outra rádio
         if (audioPlayer.currentTime > 0 && !audioPlayer.seeking) {
-            atualizarStatusPlayer("Pausado");
+            atualizarStatusPlayer('pausado', 'PAUSADO');
         }
     });
 
     audioPlayer.addEventListener('error', () => {
-        atualizarStatusPlayer("Erro de Stream");
+        atualizarStatusPlayer('erro', 'ERRO');
     });
 }
 
@@ -639,7 +684,8 @@ window.tocarRadio = function(url, nome, pais, countryCode, cardElement) {
     const urlBandeira = cleanCountryCode ? `https://flagcdn.com/w20/${cleanCountryCode}.png` : '';
 
     audioPlayer.play().then(() => {
-        atualizarStatusPlayer("No AR");
+        // ATENÇÃO: Removemos daqui o atualizarStatusPlayer("No AR") 
+        // para que o status seja gerido centralmente pelo evento 'playing' do áudio.
         
         if (playingTitle) playingTitle.textContent = radioNome;
         
@@ -649,7 +695,8 @@ window.tocarRadio = function(url, nome, pais, countryCode, cardElement) {
 
         if (playerToggleBtn) playerToggleBtn.textContent = "⏸";
     }).catch((err) => { 
-        atualizarStatusPlayer("Erro"); 
+        console.log("Erro ao reproduzir fluxo:", err);
+        // O erro também será capturado pelo evento 'error' do audioPlayer
     });
 
     const radioObj = { 
@@ -930,16 +977,13 @@ if (playerToggleBtn) {
         if (audioPlayer.paused) {
             audioPlayer.play().then(() => {
                 playerToggleBtn.textContent = "⏸"; 
-                atualizarStatusPlayer("No AR");
                 atualizarEstadosVisuaisNasListas();
             }).catch(err => {
-                console.log("Erro ao reproduzir áudio:", err);
-                atualizarStatusPlayer("Erro");
+                console.log("Erro ao retomar áudio:", err);
             });
         } else {
             audioPlayer.pause();
             playerToggleBtn.textContent = "▶"; 
-            atualizarStatusPlayer("Pausado");
             atualizarEstadosVisuaisNasListas();
         }
     };
