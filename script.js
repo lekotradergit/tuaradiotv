@@ -81,7 +81,7 @@ function atualizarStatusPlayer(mensagem) {
 // Monitorização dos Estados do Player de Áudio (Bufferização, Play, Pausa, Erros)
 if (audioPlayer) {
     audioPlayer.addEventListener('waiting', () => {
-        atualizarStatusPlayer("Carregando...");
+        atualizarStatusPlayer("A BUFFERIZAR...");
     });
 
     audioPlayer.addEventListener('playing', () => {
