@@ -587,7 +587,6 @@ if (tabTrendingBtn) {
 // ==========================================
 function atualizarEstadosVisuaisNasListas() {
     const todosOsCards = document.querySelectorAll('.radio-row-card');
-    
     todosOsCards.forEach(card => {
         const urlCard = card.getAttribute('data-url');
         const estaTocando = (radioAtualUrl === urlCard && !audioPlayer.paused);
@@ -597,55 +596,10 @@ function atualizarEstadosVisuaisNasListas() {
 
         if (estaTocando) {
             card.classList.add('playing');
-            if (indicatorIcon) {
-                indicatorIcon.textContent = '♫';
-                
-                // Estilos para transformar o indicador num círculo perfeito e simétrico
-                indicatorIcon.style.backgroundColor = '#22c55e';
-                indicatorIcon.style.color = '#ffffff';
-                
-                // Força dimensões idênticas e trava qualquer deformação vertical
-                indicatorIcon.style.width = '32px';
-                indicatorIcon.style.height = '32px';
-                indicatorIcon.style.minWidth = '32px';
-                indicatorIcon.style.minHeight = '32px';
-                indicatorIcon.style.maxWidth = '32px';
-                indicatorIcon.style.maxHeight = '32px';
-                
-                indicatorIcon.style.aspectRatio = '1 / 1';
-                indicatorIcon.style.borderRadius = '50%';
-                indicatorIcon.style.padding = '0';
-                indicatorIcon.style.margin = '0 auto';
-                
-                // Centralização perfeita do ícone da nota musical no interior
-                indicatorIcon.style.display = 'inline-flex';
-                indicatorIcon.style.alignItems = 'center';
-                indicatorIcon.style.justifyContent = 'center';
-                indicatorIcon.style.boxSizing = 'border-box';
-            }
+            if (indicatorIcon) indicatorIcon.textContent = '♫';
         } else {
             card.classList.remove('playing');
-            if (indicatorIcon) {
-                indicatorIcon.textContent = '▶';
-                
-                // Restaura todos os estilos inline para voltar exatamente ao comportamento padrão do CSS original
-                indicatorIcon.style.backgroundColor = '';
-                indicatorIcon.style.color = '';
-                indicatorIcon.style.width = '';
-                indicatorIcon.style.height = '';
-                indicatorIcon.style.minWidth = '';
-                indicatorIcon.style.minHeight = '';
-                indicatorIcon.style.maxWidth = '';
-                indicatorIcon.style.maxHeight = '';
-                indicatorIcon.style.aspectRatio = '';
-                indicatorIcon.style.borderRadius = '';
-                indicatorIcon.style.padding = '';
-                indicatorIcon.style.margin = '';
-                indicatorIcon.style.display = '';
-                indicatorIcon.style.alignItems = '';
-                indicatorIcon.style.justifyContent = '';
-                indicatorIcon.style.boxSizing = '';
-            }
+            if (indicatorIcon) indicatorIcon.textContent = '▶';
         }
 
         if (favBtn) {
