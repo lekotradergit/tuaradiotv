@@ -271,7 +271,7 @@ async function pesquisarRadios(acumular = false) {
     if (!acumular) {
         currentOffset = 0;
         if (searchRadioList) {
-            searchRadioList.innerHTML = `<p class="loading-msg">Pesquisando estações...</p>`;
+            searchRadioList.innerHTML = `<p class="loading-msg" style="text-align: center;">Pesquisando estações...</p>`;
         }
     }
 
@@ -321,7 +321,7 @@ async function pesquisarRadios(acumular = false) {
     }
 }
 
-let  radios_achados = 0;
+
 function renderizarListaPesquisa(radios) {
     // Guarda quantos rádios achou. Serve para manter o foco no microfone se for zero
 	//radios_achados = radios.length;
@@ -334,16 +334,19 @@ function renderizarListaPesquisa(radios) {
 
     if (searchCount) {
         if (radios.length < itensPorPagina) {
-           searchCount.textContent = `${radios.length} estações`;
-		   radios_achados = radios.length;
-	} else {
-	   searchCount.textContent = `${radios.length}+ estações`;
+           if (radios.length == 1){
+				searchCount.textContent = `${radios.length} estação`;
+		   }else{
+				searchCount.textContent = `${radios.length} estações`;
+		   }
+		} else {
+		searchCount.textContent = `${radios.length}+ estações`;
         }        
     }
 
     if (!radios || !radios.length) {
         if (!currentOffset) {
-            searchRadioList.innerHTML = `<p class="loading-msg">Nenhuma estação encontrada.</p>`;
+            searchRadioList.innerHTML = `<p class="loading-msg" style="text-align: center;">Nenhuma estação encontrada.</p>`;
             searchInput.removeAttribute('readonly');
 			//Se a pesquisa veio do microfone é não encontrou rádios, set o foco no mesmo botão
 			if (pesquisandoPorVoz) {
@@ -534,7 +537,7 @@ async function atualizarListaSecundaria() {
         renderizarListaSecundaria(favoritasRadios);
     } else if (abaSecundariaAtiva === 'trending') {
         if (trendingRadios.length === 0) {
-            secondaryRadioList.innerHTML = `<p class="loading-msg">A carregar top cliques...</p>`;
+            secondaryRadioList.innerHTML = `<p class="loading-msg" style="text-align: center;">Carregando top cliques...</p>`;
             try {
                 const res = await fetchComFailover('/stations/topclick/30?hidebroken=true');
                 let dados = await res.json();
@@ -552,7 +555,7 @@ function renderizarListaSecundaria(radios) {
     secondaryRadioList.innerHTML = '';
 
     if (!radios || !radios.length) {
-        secondaryRadioList.innerHTML = `<p class="loading-msg">Sem itens nesta lista.</p>`;
+        secondaryRadioList.innerHTML = `<p class="loading-msg" style="text-align: center;">Sem itens nesta lista.</p>`;		
         return;
     }
 
