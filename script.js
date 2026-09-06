@@ -271,7 +271,7 @@ async function pesquisarRadios(acumular = false) {
     if (!acumular) {
         currentOffset = 0;
         if (searchRadioList) {
-            searchRadioList.innerHTML = `<p class="loading-msg">A pesquisar estações...</p>`;
+            searchRadioList.innerHTML = `<p class="loading-msg">Pesquisando estações...</p>`;
         }
     }
 
@@ -321,8 +321,12 @@ async function pesquisarRadios(acumular = false) {
     }
 }
 
+let  radios_achados = 0;
 function renderizarListaPesquisa(radios) {
-    if (!searchRadioList) return;
+    // Guarda quantos rádios achou. Serve para manter o foco no microfone se for zero
+	//radios_achados = radios.length;
+	
+	if (!searchRadioList) return;
     
     if (!currentOffset) {
         searchRadioList.innerHTML = '';
@@ -331,6 +335,7 @@ function renderizarListaPesquisa(radios) {
     if (searchCount) {
         if (radios.length < itensPorPagina) {
            searchCount.textContent = `${radios.length} estações`;
+		   radios_achados = radios.length;
 	} else {
 	   searchCount.textContent = `${radios.length}+ estações`;
         }        
@@ -340,7 +345,13 @@ function renderizarListaPesquisa(radios) {
         if (!currentOffset) {
             searchRadioList.innerHTML = `<p class="loading-msg">Nenhuma estação encontrada.</p>`;
             searchInput.removeAttribute('readonly');
-            searchInput.focus();
+			//Se a pesquisa veio do microfone é não encontrou rádios, set o foco no mesmo botão
+			if (pesquisandoPorVoz) {
+				micBtn.focus();
+				pesquisandoPorVoz =false;
+			}else{
+				searchInput.focus();
+			}
         }
         return;
     }
@@ -1019,6 +1030,8 @@ if (playerToggleBtn) {
 const micBtn = document.getElementById('micBtn');
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
+let pesquisandoPorVoz = false;
+
 if (!SpeechRecognition) {
     console.warn("Este navegador não suporta reconhecimento de voz.");
     if (micBtn) micBtn.style.display = 'none'; 
@@ -1049,7 +1062,8 @@ if (!SpeechRecognition) {
         if (searchInput) {
             searchInput.value = speechToText;
             verificarFiltrosAtivos();
-            pesquisarRadios(false);
+            pesquisandoPorVoz = true;
+			pesquisarRadios(false);
         }
     };
 
