@@ -768,13 +768,13 @@ window.tocarRadio = function (url, nome, pais, countryCode, cardElement) {
 };
 
 // ==========================================
-// Função de Carregamento Nativo Definitiva com Proxy de Contorno para TV
+// Função de Carregamento Nativo Definitiva (Pós-Correção Android Manifest / WebView)
 // ==========================================
 async function carregarStreamNativo(url, radioNome, urlBandeira, radioPais) {
     setTimeout(async () => {
         let streamFinal = url;
 
-        // 1. Se o link for uma playlist (.m3u / .pls), extrai o endereço real de áudio
+        // Se o link for uma playlist (.m3u ou .pls), tenta extrair o endereço real de áudio
         if (url && (url.includes('.m3u') || url.includes('.pls') || url.endsWith('/'))) {
             try {
                 const resposta = await fetch(url, { mode: 'cors' });
@@ -792,12 +792,13 @@ async function carregarStreamNativo(url, radioNome, urlBandeira, radioPais) {
             }
         }
 
-        // 2. Paragem e limpeza completa dos buffers da TV
+        // Limpeza de buffers do leitor da TV
         audioPlayer.pause();
         audioPlayer.removeAttribute('src');
         audioPlayer.load();
 
-        // 3. Primeira tentativa: Atribuição direta do link
+        // Como o Android Manifest e o WebView já permitem HTTP e Mixed Content, 
+        // podemos enviar a URL original diretamente com total segurança e alta velocidade!
         audioPlayer.src = streamFinal;
         audioPlayer.load();
 
@@ -811,39 +812,16 @@ async function carregarStreamNativo(url, radioNome, urlBandeira, radioPais) {
                 playerStatus.textContent = "🟢 No Ar";
                 playerStatus.style.color = '#2ecc71';
             }
-        }).catch(async (erroPrincipal) => {
-            console.warn("⚠️ Tentativa direta rejeitada pela TV. A acionar rota alternativa de contorno...", erroPrincipal);
-
-            // 4. Segunda tentativa (Fallback Inteligente): Utilização de proxy público de stream para bypass de restrições de CORS/Codec da TV
-            // Utilizamos um codificador de URL seguro para encapsular o stream da rádio problemática
-            const streamCodificado = encodeURIComponent(streamFinal);
-            const urlAlternativa = `https://allorigins.win/raw?url=${streamCodificado}`; // Ou rota de proxy de áudio equivalente
-
-            // Como alternativa limpa sem quebrar o formato de áudio nativo, testamos forçar via crossorigin ou URL limpa com timestamp
-            let urlComContorno = streamFinal.includes('?') ? `${streamFinal}&_t=${Date.now()}` : `${streamFinal}?_t=${Date.now()}`;
-
-            audioPlayer.src = urlComContorno;
-            audioPlayer.load();
-
-            audioPlayer.play().then(() => {
-                if (playingTitle) playingTitle.textContent = radioNome;
-                if (songMetadata) {
-                    songMetadata.innerHTML = `${urlBandeira ? `<img src="${urlBandeira}" alt="${radioPais}" style="width: 20px; height: auto; margin-right: 8px; vertical-align: middle; border-radius: 2px;" onerror="this.style.display='none'">` : ''} ${radioPais || ''}`;
-                }
-                if (playerToggleBtn) playerToggleBtn.textContent = "⏸";
-                if (playerStatus) {
-                    playerStatus.textContent = "🟢 No Ar (Alternativo)";
-                    playerStatus.style.color = '#2ecc71';
-                }
-            }).catch((erroDefinitivo) => {
-                console.error("❌ Erro definitivo na reprodução do stream na TV:", erroDefinitivo);
-                if (playerStatus) {
-                    playerStatus.textContent = "❌ Stream protegido na TV";
-                    playerStatus.style.color = '#e74c3c';
-                }
-            });
+            if (typeof marcarComoSucesso === 'function') marcarComoSucesso(streamFinal);
+        }).catch((erroTratada) => {
+            console.error("❌ Erro ao reproduzir o fluxo na TV:", erroTratada);
+            if (playerStatus) {
+                playerStatus.textContent = "❌ Indisponível";
+                playerStatus.style.color = '#e74c3c';
+            }
+            if (typeof marcarComoErro === 'function') marcarComoErro(streamFinal, erroTratada);
         });
-    }, 200);
+    }, 150);
 }
 
 window.toggleFavorito = function (nome, pais, countryCode, url) {
