@@ -817,7 +817,7 @@ function carregarStreamNativo(url, radioNome, urlBandeira, radioPais) {
 }
 
 // ==========================================
-// Função de Carregamento Nativo com Rota Segura para TV
+// Função de Carregamento Nativo Otimizada para Smart TV / Fire TV
 // ==========================================
 function carregarStreamNativo(url, radioNome, urlBandeira, radioPais) {
     setTimeout(() => {
@@ -838,31 +838,34 @@ function carregarStreamNativo(url, radioNome, urlBandeira, radioPais) {
             if (playerToggleBtn) playerToggleBtn.textContent = "⏸";
             if (typeof marcarComoSucesso === 'function') marcarComoSucesso(url);
         }).catch((erroTratada) => {
-            console.warn("⚠️ Tentativa segura falhou. A tentar proxy de contorno para HTTP...", erroTratada);
+            console.warn("⚠️ Tentativa de fluxo direto falhou. A tentar URL original em modo seguro...", erroTratada);
 
-            // Fallback com proxy público de contorno para fluxos HTTP restritos em páginas HTTPS
-            const urlComProxy = `https://corsproxy.io/?` + encodeURIComponent(url);
+            // Segunda tentativa utilizando a URL original diretamente (caso o fallback HTTPS tenha rejeitado)
+            if (urlTratada !== url) {
+                audioPlayer.src = url;
+                audioPlayer.play().then(() => {
+                    if (playingTitle) playingTitle.textContent = radioNome;
+                    if (songMetadata) {
+                        songMetadata.innerHTML = `${urlBandeira ? `<img src="${urlBandeira}" alt="${radioPais}" style="width: 20px; height: auto; margin-right: 8px; vertical-align: middle; border-radius: 2px;" onerror="this.style.display='none'">` : ''} ${radioPais || ''}`;
+                    }
+                    if (playerToggleBtn) playerToggleBtn.textContent = "⏸";
+                    if (typeof marcarComoSucesso === 'function') marcarComoSucesso(url);
+                    return;
+                }).catch(err => {
+                    console.warn("⚠️ URL original também rejeitada pelo navegador da TV:", err);
+                });
+            }
 
-            audioPlayer.src = urlComProxy;
-            audioPlayer.play().then(() => {
-                if (playingTitle) playingTitle.textContent = radioNome;
-                if (songMetadata) {
-                    songMetadata.innerHTML = `${urlBandeira ? `<img src="${urlBandeira}" alt="${radioPais}" style="width: 20px; height: auto; margin-right: 8px; vertical-align: middle; border-radius: 2px;" onerror="this.style.display='none'">` : ''} ${radioPais || ''}`;
-                }
-                if (playerToggleBtn) playerToggleBtn.textContent = "⏸";
-                if (typeof marcarComoSucesso === 'function') marcarComoSucesso(url);
-            }).catch((erroFinal) => {
-                console.error("❌ Erro definitivo no fluxo da rádio:", erroFinal);
-                if (playerStatus) {
-                    playerStatus.textContent = "❌ Indisponível na TV";
-                    playerStatus.style.color = '#e74c3c';
-                }
-                if (typeof marcarComoErro === 'function') marcarComoErro(url, erroFinal);
-            });
+            // Se todas as tentativas falharem, exibe estado indisponível de forma limpa
+            console.error("❌ Erro definitivo no fluxo da rádio.");
+            if (playerStatus) {
+                playerStatus.textContent = "❌ Indisponível na TV";
+                playerStatus.style.color = '#e74c3c';
+            }
+            if (typeof marcarComoErro === 'function') marcarComoErro(url, erroTratada);
         });
     }, 150);
 }
-
 
 window.toggleFavorito = function (nome, pais, countryCode, url) {
     const urlAlvo = url ? url.trim() : '';
