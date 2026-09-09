@@ -738,14 +738,23 @@ window.tocarRadio = function (url, nome, pais, countryCode, cardElement) {
 
         if (playerToggleBtn) playerToggleBtn.textContent = "⏸";
     }).catch((err) => {
-        console.warn("⚠️ Aviso na TV: Falha com URL tratada. A tentar recurso...", err);
+        console.warn("⚠️ Aviso na TV: Falha de transporte ou conteúdo misto. A tentar recurso...", err);
         
-        // Estratégia de Fallback: Se a tentativa HTTPS falhou, recua para o HTTP original
+        // Estratégia de Fallback: Tenta o link original ou avisa o player
         if (streamUrlTratada !== streamUrl) {
             audioPlayer.src = streamUrl;
             audioPlayer.play().catch(erroFinal => {
-                console.error("❌ Erro definitivo no fluxo da rádio:", erroFinal);
+                console.error("❌ Esta rádio bloqueia conexões HTTP em páginas HTTPS na TV.", erroFinal);
+                if (playerStatus) {
+                    playerStatus.textContent = "❌ Indisponível na TV";
+                    playerStatus.style.color = '#e74c3c';
+                }
             });
+        } else {
+            if (playerStatus) {
+                playerStatus.textContent = "❌ Erro de Formato";
+                playerStatus.style.color = '#e74c3c';
+            }
         }
     });
 
