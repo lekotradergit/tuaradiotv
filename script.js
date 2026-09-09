@@ -668,12 +668,16 @@ function acionarCard(streamUrl, nome, pais, countryCode, cardElement) {
     }
 }
 
+// ==========================================
+// Função Principal de Reprodução Otimizada para Smart TV / Fire TV
+// ==========================================
 window.tocarRadio = function (url, nome, pais, countryCode, cardElement) {
     let streamUrl = url;
     let radioNome = nome;
     let radioPais = pais;
     let radioCode = countryCode;
 
+    // Recolhe os dados diretamente do elemento HTML do cartão caso faltem argumentos
     if (cardElement && typeof cardElement === 'object' && cardElement.getAttribute) {
         streamUrl = streamUrl || cardElement.getAttribute('data-url');
         radioNome = radioNome || cardElement.getAttribute('data-name');
@@ -681,6 +685,7 @@ window.tocarRadio = function (url, nome, pais, countryCode, cardElement) {
         radioCode = radioCode || cardElement.getAttribute('data-countrycode');
     }
 
+    // Tratamento de segurança para nomes em falta
     if ((!radioNome || radioNome === 'Sem Nome') && streamUrl) {
         const cartaoDom = document.querySelector(`.radio-row-card[data-url="${CSS.escape(streamUrl)}"]`);
         if (cartaoDom) {
@@ -701,20 +706,30 @@ window.tocarRadio = function (url, nome, pais, countryCode, cardElement) {
 
     radioNome = radioNome || 'Sem Nome';
     radioPais = radioPais || 'Mundo';
-    streamUrl = streamUrl || radioAtualUrl;
-
+    
+    // Unificação de variáveis globais de controlo de reprodução
+    streamUrl = streamUrl || window.currentPlayingUrl || window.radioAtualUrl;
     if (!streamUrl) return;
 
-    radioAtualUrl = streamUrl;
-    audioPlayer.src = streamUrl;
+    window.currentPlayingUrl = streamUrl;
+    window.radioAtualUrl = streamUrl;
+
+    // ----------------------------------------------------
+    // TRATAMENTO PROFISSIONAL PARA FIRE TV (Conteúdo Misto)
+    // ----------------------------------------------------
+    let streamUrlTratada = streamUrl;
+    if (window.location.protocol === 'https:' && streamUrl.startsWith('http://')) {
+        // Tenta forçar HTTPS para evitar bloqueios rígidos de segurança da TV
+        streamUrlTratada = streamUrl.replace('http://', 'https://');
+    }
+
+    audioPlayer.src = streamUrlTratada;
 
     const cleanCountryCode = (typeof radioCode === 'string') ? radioCode.trim().toLowerCase() : '';
     const urlBandeira = cleanCountryCode ? `https://flagcdn.com/w20/${cleanCountryCode}.png` : '';
 
+    // Executa a reprodução com tratamento robusto de erros e fallback automático
     audioPlayer.play().then(() => {
-        // ATENÇÃO: Removemos daqui o atualizarStatusPlayer("No AR") 
-        // para que o status seja gerido centralmente pelo evento 'playing' do áudio.
-
         if (playingTitle) playingTitle.textContent = radioNome;
 
         if (songMetadata) {
@@ -723,10 +738,18 @@ window.tocarRadio = function (url, nome, pais, countryCode, cardElement) {
 
         if (playerToggleBtn) playerToggleBtn.textContent = "⏸";
     }).catch((err) => {
-        console.log("Erro ao reproduzir fluxo:", err);
-        // O erro também será capturado pelo evento 'error' do audioPlayer
+        console.warn("⚠️ Aviso na TV: Falha com URL tratada. A tentar recurso...", err);
+        
+        // Estratégia de Fallback: Se a tentativa HTTPS falhou, recua para o HTTP original
+        if (streamUrlTratada !== streamUrl) {
+            audioPlayer.src = streamUrl;
+            audioPlayer.play().catch(erroFinal => {
+                console.error("❌ Erro definitivo no fluxo da rádio:", erroFinal);
+            });
+        }
     });
 
+    // Gestão de histórico de rádios recentes
     const radioObj = {
         name: radioNome,
         country: radioPais,
@@ -734,26 +757,31 @@ window.tocarRadio = function (url, nome, pais, countryCode, cardElement) {
         url_resolved: streamUrl
     };
 
-    recentesRadios = recentesRadios.filter(r => {
-        const rUrl = (r.url_resolved || r.url || '').trim();
-        return rUrl !== streamUrl.trim();
-    });
+    if (typeof recentesRadios !== 'undefined') {
+        recentesRadios = recentesRadios.filter(r => {
+            const rUrl = (r.url_resolved || r.url || '').trim();
+            return rUrl !== streamUrl.trim();
+        });
 
-    recentesRadios.unshift(radioObj);
-    if (recentesRadios.length > 20) recentesRadios.pop();
+        recentesRadios.unshift(radioObj);
+        if (recentesRadios.length > 20) recentesRadios.pop();
 
-    localStorage.setItem('tua_radio_recentes', JSON.stringify(recentesRadios));
+        localStorage.setItem('tua_radio_recentes', JSON.stringify(recentesRadios));
+    }
 
-    atualizarEstadosVisuaisNasListas();
+    // Atualização visual das listas e foco no ambiente de TV
+    if (typeof atualizarEstadosVisuaisNasListas === 'function') {
+        atualizarEstadosVisuaisNasListas();
+    }
 
-    if (abaSecundariaAtiva === 'recentes') {
-        atualizarListaSecundaria();
+    if (typeof abaSecundariaAtiva !== 'undefined' && abaSecundariaAtiva === 'recentes') {
+        if (typeof atualizarListaSecundaria === 'function') atualizarListaSecundaria();
 
-        const veioDaPesquisa = cardElement && searchRadioList && searchRadioList.contains(cardElement);
+        const veioDaPesquisa = cardElement && typeof searchRadioList !== 'undefined' && searchRadioList.contains(cardElement);
 
         if (!veioDaPesquisa) {
             setTimeout(() => {
-                if (secondaryRadioList) {
+                if (typeof secondaryRadioList !== 'undefined' && secondaryRadioList) {
                     const primeiroCardRecente = secondaryRadioList.querySelector('.radio-row-card');
                     if (primeiroCardRecente) {
                         primeiroCardRecente.focus();
