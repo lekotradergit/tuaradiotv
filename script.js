@@ -636,41 +636,38 @@ function acionarCard(streamUrl, nome, pais, countryCode, cardElement) {
         realName = (typeof realName === 'string' && realName !== 'Sem Nome') ? realName : targetElement.getAttribute('data-name');
         realPais = (typeof realPais === 'string' && realPais !== 'Mundo') ? realPais : targetElement.getAttribute('data-country');
         realCode = realCode || targetElement.getAttribute('data-countrycode');
-
-        if (!realName) {
-            const h4 = targetElement.querySelector('h4');
-            if (h4) realName = h4.textContent;
-        }
-        if (!realPais || realPais === 'Mundo') {
-            const p = targetElement.querySelector('.radio-row-info p');
-            if (p) {
-                const clone = p.cloneNode(true);
-                const img = clone.querySelector('img');
-                if (img) img.remove();
-                realPais = clone.textContent.trim() || 'Mundo';
-            }
-        }
     }
 
-    realName = realName || 'Sem Nome';
-    realPais = realPais || 'Mundo';
+    realUrl = (realUrl || '').trim();
+    const urlAtualNormalizada = (radioAtualUrl || '').trim();
 
-    if (radioAtualUrl === realUrl && audioPlayer && !audioPlayer.paused) {
+    // Compara se a rádio clicada é exatamente a mesma que está a tocar e se o player não está pausado
+    const estaTocandoEstaRadio = (urlAtualNormalizada === realUrl && audioPlayer && !audioPlayer.paused);
+
+    if (estaTocandoEstaRadio) {
+        // Se já está a tocar, apenas pausa (sem reiniciar)
         audioPlayer.pause();
         if (playerToggleBtn) playerToggleBtn.textContent = "▶";
-        atualizarStatusPlayer("Pausado");
-        atualizarEstadosVisuaisNasListas();
+
+        if (typeof playerStatus !== 'undefined' && playerStatus) {
+            playerStatus.textContent = "Pausado";
+            playerStatus.style.color = '#95a5a6';
+        }
+
+        if (typeof atualizarEstadosVisuaisNasListas === 'function') {
+            atualizarEstadosVisuaisNasListas();
+        }
+
         if (targetElement && document.body.contains(targetElement)) {
             targetElement.focus();
         }
     } else {
+        // Caso contrário, inicia a reprodução normal
         tocarRadio(realUrl, realName, realPais, realCode, targetElement);
     }
 }
 
-// ==========================================
-// Função Principal de Reprodução Otimizada para Smart TV / Fire TV
-// ==========================================
+
 // ==========================================
 // Função Principal de Reprodução Otimizada para Smart TV / Fire TV
 // ==========================================
@@ -716,6 +713,7 @@ window.tocarRadio = function (url, nome, pais, countryCode, cardElement) {
 
     window.currentPlayingUrl = streamUrl;
     window.radioAtualUrl = streamUrl;
+    radioAtualUrl = streamUrl; // <-- ADICIONADO: Sincroniza a variável local para a pausa funcionar!
 
     const cleanCountryCode = (typeof radioCode === 'string') ? radioCode.trim().toLowerCase() : '';
     const urlBandeira = cleanCountryCode ? `https://flagcdn.com/w20/${cleanCountryCode}.png` : '';
@@ -770,49 +768,40 @@ window.tocarRadio = function (url, nome, pais, countryCode, cardElement) {
 };
 
 // ==========================================
-// Função de Carregamento Nativo Inteligente com Suporte a Playlists (.m3u / .pls)
+// Função de Carregamento Nativo Definitiva para Smart TV / Fire TV
 // ==========================================
 async function carregarStreamNativo(url, radioNome, urlBandeira, radioPais) {
     setTimeout(async () => {
         let streamFinal = url;
 
-        // 1. Se o link for uma playlist (.m3u ou .pls), tentamos extrair o endereço real de áudio de dentro dela
-        if (url.includes('.m3u') || url.includes('.pls') || url.endsWith('/')) {
+        // 1. Se o link apontar para playlists (.m3u / .pls), extrai o endereço interno
+        if (url && (url.includes('.m3u') || url.includes('.pls') || url.endsWith('/'))) {
             try {
-                console.log("🔍 A detetar playlist ou diretório, a inspecionar conteúdo:", url);
                 const resposta = await fetch(url, { mode: 'cors' });
                 const texto = await resposta.text();
-
-                // Extrai linhas que começam com http ou URLs válidos dentro do ficheiro de playlist
                 const linhas = texto.split('\n');
                 for (let linha of linhas) {
                     linha = linha.trim();
                     if (linha.startsWith('http://') || linha.startsWith('https://')) {
                         streamFinal = linha;
-                        console.log("✅ Link de áudio real extraído da playlist:", streamFinal);
                         break;
                     }
                 }
             } catch (e) {
-                console.warn("⚠️ Não foi possível ler a playlist diretamente, a usar URL padrão:", e);
+                console.warn("⚠️ Leitura de playlist ignorada, a usar link direto.");
             }
         }
 
-        // 2. Tratamento de protocolo misto (HTTPS na página e HTTP na rádio)
-        let urlTratada = streamFinal;
-        if (window.location.protocol === 'https:' && streamFinal.startsWith('http://')) {
-            // Tentamos manter o http original se a TV suportar, ou testamos conversão
-            urlTratada = streamFinal;
-        }
-
-        // 3. Atribuição e limpeza correta do elemento de áudio na TV
+        // 2. Paragem total e limpeza de buffers da TV para evitar conflitos de memória
         audioPlayer.pause();
-        audioPlayer.src = "";
-        audioPlayer.load(); // Força o reset do buffer da Fire TV
-
-        audioPlayer.src = urlTratada;
+        audioPlayer.removeAttribute('src');
         audioPlayer.load();
 
+        // 3. Atribuição do link tratado
+        audioPlayer.src = streamFinal;
+        audioPlayer.load();
+
+        // 4. Execução com tratamento de erro inteligente adaptado à TV
         audioPlayer.play().then(() => {
             if (playingTitle) playingTitle.textContent = radioNome;
             if (songMetadata) {
@@ -823,40 +812,39 @@ async function carregarStreamNativo(url, radioNome, urlBandeira, radioPais) {
                 playerStatus.textContent = "🟢 No Ar";
                 playerStatus.style.color = '#2ecc71';
             }
-        }).catch((erroTratada) => {
-            console.warn("⚠️ Falha no fluxo direto. A tentar contorno alternativo de codec...", erroTratada);
+        }).catch(async (erroPrincipal) => {
+            console.warn("⚠️ Primeira tentativa na TV rejeitada. A tentar contorno de compatibilidade...", erroPrincipal);
 
-            // Segunda tentativa: se falhou com https, tenta forçar http puro caso o stream seja antigo
-            if (urlTratada.startsWith('https://')) {
-                const urlHttp = urlTratada.replace('https://', 'http://');
-                audioPlayer.src = urlHttp;
-                audioPlayer.load();
-                audioPlayer.play().then(() => {
-                    if (playingTitle) playingTitle.textContent = radioNome;
-                    if (songMetadata) {
-                        songMetadata.innerHTML = `${urlBandeira ? `<img src="${urlBandeira}" alt="${radioPais}" style="width: 20px; height: auto; margin-right: 8px; vertical-align: middle; border-radius: 2px;" onerror="this.style.display='none'">` : ''} ${radioPais || ''}`;
-                    }
-                    if (playerToggleBtn) playerToggleBtn.textContent = "⏸";
-                    if (playerStatus) {
-                        playerStatus.textContent = "🟢 No Ar";
-                        playerStatus.style.color = '#2ecc71';
-                    }
-                    return;
-                }).catch(errFinal => {
-                    console.error("❌ Erro definitivo na reprodução:", errFinal);
-                    if (playerStatus) {
-                        playerStatus.textContent = "❌ Indisponível na TV";
-                        playerStatus.style.color = '#e74c3c';
-                    }
-                });
+            // Tentativa de contorno: Adicionar um parâmetro dinâmico de timestamp para quebrar cache e forçar o motor da TV a aceitar o fluxo
+            let urlComContorno = streamFinal;
+            if (!urlComContorno.includes('?')) {
+                urlComContorno += `?nocache=${Date.now()}`;
             } else {
+                urlComContorno += `&nocache=${Date.now()}`;
+            }
+
+            audioPlayer.src = urlComContorno;
+            audioPlayer.load();
+
+            audioPlayer.play().then(() => {
+                if (playingTitle) playingTitle.textContent = radioNome;
+                if (songMetadata) {
+                    songMetadata.innerHTML = `${urlBandeira ? `<img src="${urlBandeira}" alt="${radioPais}" style="width: 20px; height: auto; margin-right: 8px; vertical-align: middle; border-radius: 2px;" onerror="this.style.display='none'">` : ''} ${radioPais || ''}`;
+                }
+                if (playerToggleBtn) playerToggleBtn.textContent = "⏸";
                 if (playerStatus) {
-                    playerStatus.textContent = "❌ Indisponível na TV";
+                    playerStatus.textContent = "🟢 No Ar";
+                    playerStatus.style.color = '#2ecc71';
+                }
+            }).catch((erroDefinitivo) => {
+                console.error("❌ Fluxo incompatível com o leitor nativo da TV:", erroDefinitivo);
+                if (playerStatus) {
+                    playerStatus.textContent = "❌ Formato não suportado na TV";
                     playerStatus.style.color = '#e74c3c';
                 }
-            }
+            });
         });
-    }, 150);
+    }, 200);
 }
 
 // ==========================================
