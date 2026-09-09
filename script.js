@@ -770,18 +770,48 @@ window.tocarRadio = function (url, nome, pais, countryCode, cardElement) {
 };
 
 // ==========================================
-// Função de Carregamento Nativo com Rota Segura para TV
+// Função de Carregamento Nativo Inteligente com Suporte a Playlists (.m3u / .pls)
 // ==========================================
-function carregarStreamNativo(url, radioNome, urlBandeira, radioPais) {
-    setTimeout(() => {
-        let urlTratada = url;
+async function carregarStreamNativo(url, radioNome, urlBandeira, radioPais) {
+    setTimeout(async () => {
+        let streamFinal = url;
 
-        // Se a página for HTTPS e a rádio for HTTP, tenta atualizar para HTTPS primeiro
-        if (window.location.protocol === 'https:' && url.startsWith('http://')) {
-            urlTratada = url.replace('http://', 'https://');
+        // 1. Se o link for uma playlist (.m3u ou .pls), tentamos extrair o endereço real de áudio de dentro dela
+        if (url.includes('.m3u') || url.includes('.pls') || url.endsWith('/')) {
+            try {
+                console.log("🔍 A detetar playlist ou diretório, a inspecionar conteúdo:", url);
+                const resposta = await fetch(url, { mode: 'cors' });
+                const texto = await resposta.text();
+
+                // Extrai linhas que começam com http ou URLs válidos dentro do ficheiro de playlist
+                const linhas = texto.split('\n');
+                for (let linha of linhas) {
+                    linha = linha.trim();
+                    if (linha.startsWith('http://') || linha.startsWith('https://')) {
+                        streamFinal = linha;
+                        console.log("✅ Link de áudio real extraído da playlist:", streamFinal);
+                        break;
+                    }
+                }
+            } catch (e) {
+                console.warn("⚠️ Não foi possível ler a playlist diretamente, a usar URL padrão:", e);
+            }
         }
 
+        // 2. Tratamento de protocolo misto (HTTPS na página e HTTP na rádio)
+        let urlTratada = streamFinal;
+        if (window.location.protocol === 'https:' && streamFinal.startsWith('http://')) {
+            // Tentamos manter o http original se a TV suportar, ou testamos conversão
+            urlTratada = streamFinal;
+        }
+
+        // 3. Atribuição e limpeza correta do elemento de áudio na TV
+        audioPlayer.pause();
+        audioPlayer.src = "";
+        audioPlayer.load(); // Força o reset do buffer da Fire TV
+
         audioPlayer.src = urlTratada;
+        audioPlayer.load();
 
         audioPlayer.play().then(() => {
             if (playingTitle) playingTitle.textContent = radioNome;
@@ -789,29 +819,42 @@ function carregarStreamNativo(url, radioNome, urlBandeira, radioPais) {
                 songMetadata.innerHTML = `${urlBandeira ? `<img src="${urlBandeira}" alt="${radioPais}" style="width: 20px; height: auto; margin-right: 8px; vertical-align: middle; border-radius: 2px;" onerror="this.style.display='none'">` : ''} ${radioPais || ''}`;
             }
             if (playerToggleBtn) playerToggleBtn.textContent = "⏸";
-            if (typeof marcarComoSucesso === 'function') marcarComoSucesso(url);
+            if (playerStatus) {
+                playerStatus.textContent = "🟢 No Ar";
+                playerStatus.style.color = '#2ecc71';
+            }
         }).catch((erroTratada) => {
-            console.warn("⚠️ Tentativa segura falhou. A tentar proxy de contorno para HTTP...", erroTratada);
+            console.warn("⚠️ Falha no fluxo direto. A tentar contorno alternativo de codec...", erroTratada);
 
-            // Fallback com proxy público de contorno para fluxos HTTP restritos em páginas HTTPS
-            const urlComProxy = `https://corsproxy.io/?` + encodeURIComponent(url);
-
-            audioPlayer.src = urlComProxy;
-            audioPlayer.play().then(() => {
-                if (playingTitle) playingTitle.textContent = radioNome;
-                if (songMetadata) {
-                    songMetadata.innerHTML = `${urlBandeira ? `<img src="${urlBandeira}" alt="${radioPais}" style="width: 20px; height: auto; margin-right: 8px; vertical-align: middle; border-radius: 2px;" onerror="this.style.display='none'">` : ''} ${radioPais || ''}`;
-                }
-                if (playerToggleBtn) playerToggleBtn.textContent = "⏸";
-                if (typeof marcarComoSucesso === 'function') marcarComoSucesso(url);
-            }).catch((erroFinal) => {
-                console.error("❌ Erro definitivo no fluxo da rádio:", erroFinal);
+            // Segunda tentativa: se falhou com https, tenta forçar http puro caso o stream seja antigo
+            if (urlTratada.startsWith('https://')) {
+                const urlHttp = urlTratada.replace('https://', 'http://');
+                audioPlayer.src = urlHttp;
+                audioPlayer.load();
+                audioPlayer.play().then(() => {
+                    if (playingTitle) playingTitle.textContent = radioNome;
+                    if (songMetadata) {
+                        songMetadata.innerHTML = `${urlBandeira ? `<img src="${urlBandeira}" alt="${radioPais}" style="width: 20px; height: auto; margin-right: 8px; vertical-align: middle; border-radius: 2px;" onerror="this.style.display='none'">` : ''} ${radioPais || ''}`;
+                    }
+                    if (playerToggleBtn) playerToggleBtn.textContent = "⏸";
+                    if (playerStatus) {
+                        playerStatus.textContent = "🟢 No Ar";
+                        playerStatus.style.color = '#2ecc71';
+                    }
+                    return;
+                }).catch(errFinal => {
+                    console.error("❌ Erro definitivo na reprodução:", errFinal);
+                    if (playerStatus) {
+                        playerStatus.textContent = "❌ Indisponível na TV";
+                        playerStatus.style.color = '#e74c3c';
+                    }
+                });
+            } else {
                 if (playerStatus) {
                     playerStatus.textContent = "❌ Indisponível na TV";
                     playerStatus.style.color = '#e74c3c';
                 }
-                if (typeof marcarComoErro === 'function') marcarComoErro(url, erroFinal);
-            });
+            }
         });
     }, 150);
 }
