@@ -671,6 +671,9 @@ function acionarCard(streamUrl, nome, pais, countryCode, cardElement) {
 // ==========================================
 // Função Principal de Reprodução Otimizada para Smart TV / Fire TV
 // ==========================================
+// ==========================================
+// Função Principal de Reprodução Otimizada para Smart TV / Fire TV
+// ==========================================
 window.tocarRadio = function (url, nome, pais, countryCode, cardElement) {
     let streamUrl = url;
     let radioNome = nome;
@@ -706,7 +709,7 @@ window.tocarRadio = function (url, nome, pais, countryCode, cardElement) {
 
     radioNome = radioNome || 'Sem Nome';
     radioPais = radioPais || 'Mundo';
-    
+
     // Unificação de variáveis globais de controlo de reprodução
     streamUrl = streamUrl || window.currentPlayingUrl || window.radioAtualUrl;
     if (!streamUrl) return;
@@ -714,49 +717,13 @@ window.tocarRadio = function (url, nome, pais, countryCode, cardElement) {
     window.currentPlayingUrl = streamUrl;
     window.radioAtualUrl = streamUrl;
 
-    // ----------------------------------------------------
-    // TRATAMENTO PROFISSIONAL PARA FIRE TV (Conteúdo Misto)
-    // ----------------------------------------------------
-    let streamUrlTratada = streamUrl;
-    if (window.location.protocol === 'https:' && streamUrl.startsWith('http://')) {
-        // Tenta forçar HTTPS para evitar bloqueios rígidos de segurança da TV
-        streamUrlTratada = streamUrl.replace('http://', 'https://');
-    }
-
-    audioPlayer.src = streamUrlTratada;
-
     const cleanCountryCode = (typeof radioCode === 'string') ? radioCode.trim().toLowerCase() : '';
     const urlBandeira = cleanCountryCode ? `https://flagcdn.com/w20/${cleanCountryCode}.png` : '';
 
-    // Executa a reprodução com tratamento robusto de erros e fallback automático
-    audioPlayer.play().then(() => {
-        if (playingTitle) playingTitle.textContent = radioNome;
-
-        if (songMetadata) {
-            songMetadata.innerHTML = `${urlBandeira ? `<img src="${urlBandeira}" alt="${radioPais}" style="width: 20px; height: auto; margin-right: 8px; vertical-align: middle; border-radius: 2px;" onerror="this.style.display='none'">` : ''} ${radioPais || ''}`;
-        }
-
-        if (playerToggleBtn) playerToggleBtn.textContent = "⏸";
-    }).catch((err) => {
-        console.warn("⚠️ Aviso na TV: Falha de transporte ou conteúdo misto. A tentar recurso...", err);
-        
-        // Estratégia de Fallback: Tenta o link original ou avisa o player
-        if (streamUrlTratada !== streamUrl) {
-            audioPlayer.src = streamUrl;
-            audioPlayer.play().catch(erroFinal => {
-                console.error("❌ Esta rádio bloqueia conexões HTTP em páginas HTTPS na TV.", erroFinal);
-                if (playerStatus) {
-                    playerStatus.textContent = "❌ Indisponível na TV";
-                    playerStatus.style.color = '#e74c3c';
-                }
-            });
-        } else {
-            if (playerStatus) {
-                playerStatus.textContent = "❌ Erro de Formato";
-                playerStatus.style.color = '#e74c3c';
-            }
-        }
-    });
+    // ----------------------------------------------------
+    // CHAMADA DA FUNÇÃO NATIVA SEGURA PARA A TV
+    // ----------------------------------------------------
+    carregarStreamNativo(streamUrl, radioNome, urlBandeira, radioPais);
 
     // Gestão de histórico de rádios recentes
     const radioObj = {
@@ -801,6 +768,101 @@ window.tocarRadio = function (url, nome, pais, countryCode, cardElement) {
         }
     }
 };
+
+// ==========================================
+// Função de Carregamento Nativo com Rota Segura para TV
+// ==========================================
+function carregarStreamNativo(url, radioNome, urlBandeira, radioPais) {
+    setTimeout(() => {
+        let urlTratada = url;
+
+        // Se a página for HTTPS e a rádio for HTTP, tenta atualizar para HTTPS primeiro
+        if (window.location.protocol === 'https:' && url.startsWith('http://')) {
+            urlTratada = url.replace('http://', 'https://');
+        }
+
+        audioPlayer.src = urlTratada;
+
+        audioPlayer.play().then(() => {
+            if (playingTitle) playingTitle.textContent = radioNome;
+            if (songMetadata) {
+                songMetadata.innerHTML = `${urlBandeira ? `<img src="${urlBandeira}" alt="${radioPais}" style="width: 20px; height: auto; margin-right: 8px; vertical-align: middle; border-radius: 2px;" onerror="this.style.display='none'">` : ''} ${radioPais || ''}`;
+            }
+            if (playerToggleBtn) playerToggleBtn.textContent = "⏸";
+            if (typeof marcarComoSucesso === 'function') marcarComoSucesso(url);
+        }).catch((erroTratada) => {
+            console.warn("⚠️ Tentativa segura falhou. A tentar proxy de contorno para HTTP...", erroTratada);
+
+            // Fallback com proxy público de contorno para fluxos HTTP restritos em páginas HTTPS
+            const urlComProxy = `https://corsproxy.io/?` + encodeURIComponent(url);
+
+            audioPlayer.src = urlComProxy;
+            audioPlayer.play().then(() => {
+                if (playingTitle) playingTitle.textContent = radioNome;
+                if (songMetadata) {
+                    songMetadata.innerHTML = `${urlBandeira ? `<img src="${urlBandeira}" alt="${radioPais}" style="width: 20px; height: auto; margin-right: 8px; vertical-align: middle; border-radius: 2px;" onerror="this.style.display='none'">` : ''} ${radioPais || ''}`;
+                }
+                if (playerToggleBtn) playerToggleBtn.textContent = "⏸";
+                if (typeof marcarComoSucesso === 'function') marcarComoSucesso(url);
+            }).catch((erroFinal) => {
+                console.error("❌ Erro definitivo no fluxo da rádio:", erroFinal);
+                if (playerStatus) {
+                    playerStatus.textContent = "❌ Indisponível na TV";
+                    playerStatus.style.color = '#e74c3c';
+                }
+                if (typeof marcarComoErro === 'function') marcarComoErro(url, erroFinal);
+            });
+        });
+    }, 150);
+}
+
+// ==========================================
+// Função de Carregamento Nativo com Rota Segura para TV
+// ==========================================
+function carregarStreamNativo(url, radioNome, urlBandeira, radioPais) {
+    setTimeout(() => {
+        let urlTratada = url;
+
+        // Se a página for HTTPS e a rádio for HTTP, tenta atualizar para HTTPS primeiro
+        if (window.location.protocol === 'https:' && url.startsWith('http://')) {
+            urlTratada = url.replace('http://', 'https://');
+        }
+
+        audioPlayer.src = urlTratada;
+
+        audioPlayer.play().then(() => {
+            if (playingTitle) playingTitle.textContent = radioNome;
+            if (songMetadata) {
+                songMetadata.innerHTML = `${urlBandeira ? `<img src="${urlBandeira}" alt="${radioPais}" style="width: 20px; height: auto; margin-right: 8px; vertical-align: middle; border-radius: 2px;" onerror="this.style.display='none'">` : ''} ${radioPais || ''}`;
+            }
+            if (playerToggleBtn) playerToggleBtn.textContent = "⏸";
+            if (typeof marcarComoSucesso === 'function') marcarComoSucesso(url);
+        }).catch((erroTratada) => {
+            console.warn("⚠️ Tentativa segura falhou. A tentar proxy de contorno para HTTP...", erroTratada);
+
+            // Fallback com proxy público de contorno para fluxos HTTP restritos em páginas HTTPS
+            const urlComProxy = `https://corsproxy.io/?` + encodeURIComponent(url);
+
+            audioPlayer.src = urlComProxy;
+            audioPlayer.play().then(() => {
+                if (playingTitle) playingTitle.textContent = radioNome;
+                if (songMetadata) {
+                    songMetadata.innerHTML = `${urlBandeira ? `<img src="${urlBandeira}" alt="${radioPais}" style="width: 20px; height: auto; margin-right: 8px; vertical-align: middle; border-radius: 2px;" onerror="this.style.display='none'">` : ''} ${radioPais || ''}`;
+                }
+                if (playerToggleBtn) playerToggleBtn.textContent = "⏸";
+                if (typeof marcarComoSucesso === 'function') marcarComoSucesso(url);
+            }).catch((erroFinal) => {
+                console.error("❌ Erro definitivo no fluxo da rádio:", erroFinal);
+                if (playerStatus) {
+                    playerStatus.textContent = "❌ Indisponível na TV";
+                    playerStatus.style.color = '#e74c3c';
+                }
+                if (typeof marcarComoErro === 'function') marcarComoErro(url, erroFinal);
+            });
+        });
+    }, 150);
+}
+
 
 window.toggleFavorito = function (nome, pais, countryCode, url) {
     const urlAlvo = url ? url.trim() : '';
