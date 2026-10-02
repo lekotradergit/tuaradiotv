@@ -587,3 +587,81 @@ body, html {
     text-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
 }
 
+/* ==========================================
+   ESTILOS DO PROTECTOR DE ECRÃ (SCREENSAVER)
+   ========================================== */
+.screensaver-overlay {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    z-index: 99999 !important;
+    background-color: #000 !important;
+    overflow: hidden !important;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.8s ease-in-out;
+}
+
+.screensaver-overlay.visible {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.screensaver-overlay.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* Duas tags img sobrepostas para o efeito Fade fluido */
+.ss-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain; /* Altera de 'cover' para 'contain' */
+    opacity: 0;
+    transition: opacity 1s ease-in-out;
+}
+
+.ss-image.active {
+    opacity: 1;
+}
+
+/* Informação discreta no canto da TV durante o screensaver */
+.ss-info {
+    position: absolute;
+    bottom: 40px;
+    left: 50px;
+    width: 350px;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    padding: 12px 20px;
+    border-radius: 10px;
+    color: #fff;
+    z-index: 100000;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+/* Aplica o corte de texto quer seja h3, span ou tenha a tag id/classe */
+.ss-info h3, 
+.ss-info span,
+#ssStationName {
+    display: block;
+    font-size: 0.7rem;
+    color: #f7f5f2;
+    margin: 0 0 4px 0;
+    font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.ss-info p {
+    font-size: 0.7rem;
+    color: #ccc;
+    margin: 0;
+}

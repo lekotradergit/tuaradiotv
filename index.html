@@ -9,7 +9,6 @@
     <!-- Importação do arquivo de estilos CSS -->
     <link rel="stylesheet" href="style.css">
 
-
     <!-- Ligação ao Manifesto PWA -->
     <link rel="manifest" href="manifest.json">
 
@@ -27,11 +26,25 @@
             });
         }
     </script>
-
 </head>
 <body>
 
+ <body>
+
+    <!-- ==========================================
+         PROTECTOR DE ECRÃ (SCREENSAVER DE IMAGENS)
+         ========================================== -->
+    <div id="screensaverOverlay" class="screensaver-overlay hidden">
+        <img id="ssImg1" class="ss-image active" alt="">
+        <img id="ssImg2" class="ss-image" alt="">
+        <div class="ss-info">
+            <span id="ssStationName">Tua Rádio TV</span>
+            <p>🎵 Modo Ambiente</p>
+        </div>
+    </div>
+
     <div class="tv-container">
+
         
         <!-- ==========================================
              BARRA LATERAL DE FILTROS E CONTROLOS (SIDEBAR)
@@ -64,28 +77,23 @@
                 <option value="">Todos os idiomas</option>
             </select>
 
-            <!-- Seletor de Países (posicionado acima da caixa de texto) -->
+            <!-- Seletor de Países -->
             <select id="countrySelect" class="tv-input" tabindex="0">
                 <option value="">Todos os países</option>
             </select>
 
             <!-- Caixa de Texto para Pesquisa -->
             <input type="text" id="searchInput" placeholder="Digite para pesquisar..." class="tv-input" tabindex="0" readonly>
-			<div>
-			</div>
+            <div></div>
             <!-- Botão de Microfone -->
             <button id="micBtn" class="tv-input tv-btn-mic" tabindex="0">
                 🎤 Pesquisa por voz
             </button>
-			<div>
-			</div>
+            <div></div>
             <!-- Botões de Ação -->
             <button id="clearFiltersBtn" class="tv-input tv-btn-action" tabindex="0">X Limpar Filtros</button>    
-			<div>
-			</div>            
-			<button id="searchBtn" class="tv-input tv-btn-action" tabindex="0">🔎 Pesquisar</button>
-
-
+            <div></div>            
+            <button id="searchBtn" class="tv-input tv-btn-action" tabindex="0">🔎 Pesquisar</button>
         </div>
 
         <!-- ==========================================
@@ -122,7 +130,6 @@
              PLAYER INFERIOR (Apenas Informações e Estado)
              ========================================== -->
         <footer class="player-tv">
-			<!-- Rodapé com o botão do player centralizado horizontal e verticalmente -->
             <div class="sidebar-footer">
                 <button id="playerToggleBtn" class="player-main-btn" tabindex="0">▶</button>
             </div>
@@ -144,6 +151,6 @@
     <!-- Importação do script principal de funcionamento -->
     <script src="script.js"></script>
 
-    <!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "a828e2d0a5c7458482d798c0f8a2223d"}'></script><!-- End Cloudflare Web Analytics -->
+    <!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "a828e2d0a5c7458482d798c0f8a2223d"}'></script>
 </body>
 </html>

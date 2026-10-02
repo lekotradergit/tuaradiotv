@@ -1188,4 +1188,172 @@ async function iniciarApp() {
     focarItemInicial();
 }
 
+
+// ==========================================
+// GESTÃO DO PROTECTOR DE ECRÃ (SCREENSAVER AMBIENTE)
+// ==========================================
+const SOURCESPLASH_API_KEY = "ss_ERwVP3SaJpsdRtmyWiu2ZIdn9B2Wbq6cdeghHFt7"; // Substitua pela sua chave SourceSplash real se necessário, ou use o endpoint direto
+let inactivityTimer = null;
+let screensaverInterval = null;
+let isScreensaverActive = false;
+const INACTIVITY_LIMIT_MS = 5000; // 45 segundos de inatividade para ativar
+const IMAGE_INTERVAL_MS = 10000;   // 30 segundos por imagem
+
+const screensaverOverlay = document.getElementById('screensaverOverlay');
+const ssImg1 = document.getElementById('ssImg1');
+const ssImg2 = document.getElementById('ssImg2');
+const ssStationName = document.getElementById('ssStationName');
+
+let activeImageTag = 1; // Controla qual tag img está visível
+
+function reiniciarInatividade() {
+    if (isScreensaverActive) {
+        desativarScreensaver();
+    }
+    clearTimeout(inactivityTimer);
+    inactivityTimer = setTimeout(() => {
+        // Só ativa o screensaver se houver uma rádio a tocar ou se o utilizador estiver inativo na app
+        ativarScreensaver();
+    }, INACTIVITY_LIMIT_MS);
+}
+
+function ativarScreensaver() {
+    if (isScreensaverActive) return;
+    isScreensaverActive = true;
+    
+    if (screensaverOverlay) {
+        screensaverOverlay.classList.remove('hidden');
+        screensaverOverlay.classList.add('visible');
+    }
+
+    // Atualiza o nome da rádio atual no screensaver se houver
+    if (ssStationName && playingTitle) {
+        ssStationName.textContent = playingTitle.textContent;
+    }
+
+    carregarProximaImagemScreensaver();
+    
+    // Configura o timer para trocar a imagem a cada 30 segundos
+    if (screensaverInterval) clearInterval(screensaverInterval);
+    screensaverInterval = setInterval(() => {
+        carregarProximaImagemScreensaver();
+    }, IMAGE_INTERVAL_MS);
+}
+
+function desativarScreensaver() {
+    if (!isScreensaverActive) return;
+    isScreensaverActive = false;
+
+    if (screensaverInterval) {
+        clearInterval(screensaverInterval);
+        screensaverInterval = null;
+    }
+
+    if (screensaverOverlay) {
+        screensaverOverlay.classList.remove('visible');
+        screensaverOverlay.classList.add('hidden');
+    }
+
+    // Gerenciamento de Memória: Liberta as fontes das imagens para poupar RAM na TV
+    if (ssImg1) ssImg1.src = '';
+    if (ssImg2) ssImg2.src = '';
+}
+
+
+// ==========================================
+// CONFIGURAÇÃO DO PROVEDOR DE IMAGENS
+// Escolha entre: 'picsum' ou 'sourcesplash'
+// ==========================================
+const IMAGE_PROVIDER = 'picsum'; 
+
+// Variáveis auxiliares para o SourceSplash (caso decida usar)
+const ssTemasAmplos = [
+    'nature', 'landscape', 'mountains', 'forest', 'ocean', 
+    'architecture', 'city', 'night', 'sunset', 'galaxy', 
+    'abstract', 'minimalist', 'travel', 'highway', 'river'
+];
+let historicoTemas = [];
+
+function carregarProximaImagemScreensaver() {
+    const imgAlvo = activeImageTag === 1 ? ssImg2 : ssImg1;
+    const imgAtual = activeImageTag === 1 ? ssImg1 : ssImg2;
+    let imageUrl = '';
+
+    // Seleciona o URL com base no provedor configurado
+    if (IMAGE_PROVIDER === 'picsum') {
+        // Picsum Photos: Rápido, sem limites e com tamanho exato na URL. 
+        // Adicionamos ?random= para garantir que o navegador não faz cache da mesma foto.
+        imageUrl = `https://picsum.photos/1920/1080?random=${Date.now()}`;
+    } else {
+        // SourceSplash (com rotatividade de temas)
+        let temaEscolhido;
+        do {
+            temaEscolhido = ssTemasAmplos[Math.floor(Math.random() * ssTemasAmplos.length)];
+        } while (historicoTemas.includes(temaEscolhido) && historicoTemas.length < ssTemasAmplos.length - 1);
+
+        historicoTemas.push(temaEscolhido);
+        if (historicoTemas.length > 5) historicoTemas.shift();
+
+        const randomSeed = Math.random().toString(36).substring(2, 9);
+        imageUrl = `https://www.sourcesplash.com/i/random?q=${temaEscolhido}&seed=${randomSeed}&_=${Date.now()}`;
+    }
+
+    console.log(`A carregar imagem [Provedor: ${IMAGE_PROVIDER}] ->`, imageUrl);
+
+    const tempImg = new Image();
+    
+    tempImg.onload = () => {
+        // Validação de segurança exclusiva para o SourceSplash (placeholder 800x600)
+        if (IMAGE_PROVIDER === 'sourcesplash' && tempImg.naturalWidth === 800 && tempImg.naturalHeight === 600) {
+            console.warn("Detectado placeholder 800x600 do SourceSplash. A saltar...");
+            tempImg.onload = null;
+            tempImg.onerror = null;
+            setTimeout(carregarProximaImagemScreensaver, 500);
+            return;
+        }
+
+        console.log("Imagem carregada com sucesso:", tempImg.naturalWidth, "x", tempImg.naturalHeight);
+        imgAlvo.src = tempImg.src;
+        
+        // Aplica o Fade suave
+        imgAlvo.classList.add('active');
+        imgAtual.classList.remove('active');
+
+        activeImageTag = activeImageTag === 1 ? 2 : 1;
+        tempImg.onload = null;
+        tempImg.onerror = null;
+    };
+
+    tempImg.onerror = (err) => {
+        console.error("Erro ao carregar imagem:", err);
+        tempImg.onload = null;
+        tempImg.onerror = null;
+        setTimeout(carregarProximaImagemScreensaver, 1000);
+    };
+
+    tempImg.src = imageUrl;
+}
+
+// Função de apoio para garantir que a TV nunca fica preta ou com erro visível
+function ativarFallbackVisual(imgAlvo, imgAtual) {
+    imgAlvo.src = "";
+    // Fundo elegante em gradiente escuro com toque de cor da rádio para manter o ambiente premium na TV
+    imgAlvo.style.background = "linear-gradient(135deg, #0b0a09 0%, #1f1a17 50%, #2e1a05 100%)";
+    imgAlvo.classList.add('active');
+    imgAtual.classList.remove('active');
+    activeImageTag = activeImageTag === 1 ? 2 : 1;
+}
+
+// Eventos de deteção de comandos do telecomando / rato / teclado para reiniciar a inatividade
+['keydown', 'mousedown', 'mousemove', 'touchstart'].forEach(evento => {
+    window.addEventListener(evento, reiniciarInatividade, { passive: true });
+});
+
+// Inicializa o temporizador na carga do app
+reiniciarInatividade();
+
+
+
+
+
 iniciarApp();
