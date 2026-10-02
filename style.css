@@ -636,7 +636,7 @@ body, html {
     bottom: 20px;
     left: 25px;
     /* Altera de width fixo para max-width */
-    max-width: 300px;
+    max-width: 200px;
     /* Define largura automática para encolher de acordo com o texto */
     width: max-content; 
     
