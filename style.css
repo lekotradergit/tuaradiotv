@@ -633,9 +633,9 @@ body, html {
 /* Informação discreta no canto da TV durante o screensaver */
 .ss-info {
     position: absolute;
-    bottom: 40px;
-    left: 50px;
-    width: 350px;
+    bottom: 20px;
+    left: 25px;
+    width: 300px;
     background: rgba(0, 0, 0, 0.6);
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.15);
@@ -651,7 +651,7 @@ body, html {
 .ss-info span,
 #ssStationName {
     display: block;
-    font-size: 0.7rem;
+    font-size: 0.5rem;
     color: #f7f5f2;
     margin: 0 0 4px 0;
     font-weight: 700;
@@ -661,7 +661,7 @@ body, html {
 }
 
 .ss-info p {
-    font-size: 0.7rem;
+    font-size: 0.4rem;
     color: #ccc;
     margin: 0;
 }

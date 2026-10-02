@@ -1196,8 +1196,8 @@ const SOURCESPLASH_API_KEY = "ss_ERwVP3SaJpsdRtmyWiu2ZIdn9B2Wbq6cdeghHFt7"; // S
 let inactivityTimer = null;
 let screensaverInterval = null;
 let isScreensaverActive = false;
-const INACTIVITY_LIMIT_MS = 5000; // 45 segundos de inatividade para ativar
-const IMAGE_INTERVAL_MS = 10000;   // 30 segundos por imagem
+const INACTIVITY_LIMIT_MS = 20000; // 45 segundos de inatividade para ativar
+const IMAGE_INTERVAL_MS = 20000;   // 30 segundos por imagem
 
 const screensaverOverlay = document.getElementById('screensaverOverlay');
 const ssImg1 = document.getElementById('ssImg1');
