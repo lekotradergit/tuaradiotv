@@ -1257,7 +1257,7 @@ const SOURCESPLASH_API_KEY = "ss_ERwVP3SaJpsdRtmyWiu2ZIdn9B2Wbq6cdeghHFt7"; // S
 let inactivityTimer = null;
 let screensaverInterval = null;
 let isScreensaverActive = false;
-const INACTIVITY_LIMIT_MS = 5000; // 45 segundos de inatividade para ativar
+const INACTIVITY_LIMIT_MS = 20000; // 45 segundos de inatividade para ativar
 const IMAGE_INTERVAL_MS = 20000;   // 30 segundos por imagem
 
 const screensaverOverlay = document.getElementById('screensaverOverlay');
@@ -1405,7 +1405,7 @@ function ativarFallbackVisual(imgAlvo, imgAtual) {
     activeImageTag = activeImageTag === 1 ? 2 : 1;
 }
 
-/*
+
 // Eventos de deteção de comandos do telecomando / rato / teclado para reiniciar a inatividade
 ['keydown', 'mousedown', 'mousemove', 'touchstart'].forEach(evento => {
     window.addEventListener(evento, reiniciarInatividade, { passive: true });
@@ -1413,7 +1413,7 @@ function ativarFallbackVisual(imgAlvo, imgAtual) {
 
 // Inicializa o temporizador na carga do app
 reiniciarInatividade();
-*/
+
 
 
 
