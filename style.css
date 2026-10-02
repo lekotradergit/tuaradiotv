@@ -635,15 +635,23 @@ body, html {
     position: absolute;
     bottom: 20px;
     left: 25px;
-    width: 300px;
-    background: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.15);
+    /* Altera de width fixo para max-width */
+    max-width: 300px;
+    /* Define largura automática para encolher de acordo com o texto */
+    width: max-content; 
+    
+    /* Fundo praticamente transparente e desfoque sutil */
+    background: rgba(0, 0, 0, 0.15);
+    backdrop-filter: blur(4px);
+    
+    /* Borda e sombra extremamente suaves para manter a leitura */
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    
     padding: 12px 20px;
     border-radius: 10px;
     color: #fff;
     z-index: 100000;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
 }
 
 /* Aplica o corte de texto quer seja h3, span ou tenha a tag id/classe */
