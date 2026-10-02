@@ -156,8 +156,9 @@ body, html {
     color: #ffffff !important;
     border: 2px solid #333333 !important;
     border-radius: 6px;
-    font-weight: bold;
+    font-weight: normal;
     transition: all 0.2s ease;
+    height: 40px;
 }
 
 /* --- 4. Foco nos Botões (Borda Verde) --- */
@@ -672,4 +673,5 @@ body, html {
     font-size: 0.4rem;
     color: #ccc;
     margin: 0;
+    text-align: center;
 }

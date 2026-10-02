@@ -260,6 +260,64 @@ async function detetarLocalizacao() {
     } catch (e) { console.log("Erro de geolocalização:", e); }
 }
 
+
+
+
+
+
+// ==========================================
+// Implementação da Pesquisa Dinâmica (Live Search)
+// ==========================================
+let temporizadorLiveSearch = null;
+
+if (searchInput) {
+    searchInput.addEventListener('input', () => {
+        // 1. Limpa o temporizador anterior para reiniciar a contagem enquanto o utilizador escreve
+        clearTimeout(temporizadorLiveSearch);
+        console.log ("enter")
+        // 2. Só executa a pesquisa se a caixa de texto NÃO estiver vazia
+        if (searchInput.value.trim() !== "") {
+            const termo = searchInput.value.trim();
+
+            // 3. Define um atraso (debounce) de 400ms antes de disparar a pesquisa na API
+            temporizadorLiveSearch = setTimeout(() => {
+                // Limpa a regra exclusiva caso o utilizador esteja a escrever uma pesquisa livre
+                if (typeof atualizaPesquisa === 'function') {
+                    atualizaPesquisa();
+                }
+
+                verificarFiltrosAtivos();
+                //primeiraPesquisa = false;
+
+                // Executa a pesquisa (false indica que não é para acumular, mas sim nova listagem)
+                pesquisarRadios(false);
+            }, 400);
+        }
+    });
+
+    // Monitora a tecla "Enter" tambem para pesquisar
+    searchInput.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') {
+       // pesquisarRadios(false);
+    }
+    });
+}
+
+
+countrySelect.addEventListener('change', atualizaPesquisa);
+languageSelect.addEventListener('change', atualizaPesquisa);
+genreSelect.addEventListener('change', atualizaPesquisa);
+
+
+function atualizaPesquisa(){
+    verificarFiltrosAtivos();
+    pesquisarRadios(false);
+
+}
+
+
+
+
 // ==========================================
 // Controlo de Paginação e Pesquisa
 // ==========================================
@@ -417,12 +475,15 @@ function renderizarListaPesquisaComPaginacao(radios, quantidadeRecebida, acumula
                 primeiroNovoCartao.focus();
                 primeiroNovoCartao.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
             }
-        } else {
+
+            /*Retirado por ter implementado pesquisa dinâmica aos digitar
+            } else {
             const primeiroCartao = searchRadioList.querySelector('.radio-row-card');
             if (primeiroCartao && !currentOffset) {
-                primeiroCartao.focus();
-                primeiroCartao.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+                //primeiroCartao.focus();
+                //primeiroCartao.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
             }
+            */
         }
     }
 }
@@ -1196,7 +1257,7 @@ const SOURCESPLASH_API_KEY = "ss_ERwVP3SaJpsdRtmyWiu2ZIdn9B2Wbq6cdeghHFt7"; // S
 let inactivityTimer = null;
 let screensaverInterval = null;
 let isScreensaverActive = false;
-const INACTIVITY_LIMIT_MS = 20000; // 45 segundos de inatividade para ativar
+const INACTIVITY_LIMIT_MS = 5000; // 45 segundos de inatividade para ativar
 const IMAGE_INTERVAL_MS = 20000;   // 30 segundos por imagem
 
 const screensaverOverlay = document.getElementById('screensaverOverlay');
@@ -1228,7 +1289,7 @@ function ativarScreensaver() {
 
     // Atualiza o nome da rádio atual no screensaver se houver
     if (ssStationName && playingTitle) {
-        ssStationName.textContent = playingTitle.textContent;
+        ssStationName.textContent =  `🎵 ${playingTitle.textContent}`; 
     }
 
     carregarProximaImagemScreensaver();
@@ -1344,6 +1405,7 @@ function ativarFallbackVisual(imgAlvo, imgAtual) {
     activeImageTag = activeImageTag === 1 ? 2 : 1;
 }
 
+/*
 // Eventos de deteção de comandos do telecomando / rato / teclado para reiniciar a inatividade
 ['keydown', 'mousedown', 'mousemove', 'touchstart'].forEach(evento => {
     window.addEventListener(evento, reiniciarInatividade, { passive: true });
@@ -1351,7 +1413,7 @@ function ativarFallbackVisual(imgAlvo, imgAtual) {
 
 // Inicializa o temporizador na carga do app
 reiniciarInatividade();
-
+*/
 
 
 
