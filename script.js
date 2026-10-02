@@ -866,8 +866,37 @@ async function carregarStreamNativo(url, radioNome, urlBandeira, radioPais) {
         audioPlayer.play().then(() => {
             if (playingTitle) playingTitle.textContent = radioNome;
             if (songMetadata) {
-                songMetadata.innerHTML = `${urlBandeira ? `<img src="${urlBandeira}" alt="${radioPais}" style="width: 20px; height: auto; margin-right: 8px; vertical-align: middle; border-radius: 2px;" onerror="this.style.display='none'">` : ''} ${radioPais || ''}`;
+                if (urlBandeira) {
+                    // Criamos o elemento de imagem isolado via DOM para evitar qualquer erro de digitação/escape de texto
+                    const imgBandeira = document.createElement('img');
+                    imgBandeira.src = urlBandeira; // Atribuição direta da variável, sem risco de quebrar a sintaxe
+                    imgBandeira.alt = radioPais || '';
+                    imgBandeira.style.width = '20px';
+                    imgBandeira.style.height = 'auto';
+                    imgBandeira.style.marginRight = '8px';
+                    imgBandeira.style.flexShrink = '0';
+                    imgBandeira.style.display = 'inline-block';
+                    imgBandeira.style.verticalAlign = 'middle';
+                    imgBandeira.style.borderRadius = '2px';
+                    
+                    imgBandeira.onerror = function() {
+                        this.style.display = 'none';
+                    };
+
+                    // Limpa o container, adiciona a imagem criada e depois o texto do país
+                    songMetadata.innerHTML = '';
+                    songMetadata.appendChild(imgBandeira);
+                    
+                    const spanPais = document.createElement('span');
+                    spanPais.className = 'radio-pais-text';
+                    spanPais.textContent = radioPais || '';
+                    songMetadata.appendChild(spanPais);
+                } else {
+                    // Se não houver bandeira, insere apenas o texto
+                    songMetadata.innerHTML = `<span class="radio-pais-text">${radioPais || ''}</span>`;
+                }
             }
+
             if (playerToggleBtn) playerToggleBtn.textContent = "⏸";
             if (playerStatus) {
                 playerStatus.textContent = "🟢 No Ar";

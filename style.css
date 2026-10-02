@@ -675,3 +675,40 @@ body, html {
     margin: 0;
     text-align: center;
 }
+
+/* Coloca o nome da rádio e o país lado a lado na mesma linha */
+.player-details {
+    display: flex;
+    align-items: center;
+    gap: 12px; /* Espaço entre o nome da rádio e o país */
+    width: 100%;
+}
+
+/* Nome da Rádio: Ocupa o máximo de espaço disponível, mas cede se o país precisar */
+#currentStationName {
+    flex: 1;
+    max-width: 450px; /* Limite máximo para TVs (ajuste se quiser maior ou menor) */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin: 0; /* Remove margens padrões do h3 */
+}
+
+/* Container da Bandeira + Nome do País */
+#currentStationMeta {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0; /* Impede que o nome da rádio "esmague" o país */
+    max-width: 180px; /* Limite máximo para a área do país */
+    margin: 0; /* Remove margens padrões do p */
+}
+
+/* Texto do País (Garante o corte caso o nome do país seja gigante) */
+#currentStationMeta .radio-pais-text {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+}
+
+
