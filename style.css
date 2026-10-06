@@ -649,8 +649,8 @@ body, html {
     border: 1px solid rgba(255, 255, 255, 0.05);
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
     
-    padding: 12px 20px;
-    border-radius: 10px;
+    padding: 6px 6px;
+    border-radius: 5px;
     color: #fff;
     z-index: 100000;
 }
