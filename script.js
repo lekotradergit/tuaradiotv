@@ -1344,9 +1344,8 @@ function desativarScreensaver() {
         screensaverOverlay.classList.add('hidden');
     }
 
-    // Gerenciamento de Memória: Liberta as fontes das imagens para poupar RAM na TV
-    if (ssImg1) ssImg1.src = '';
-    if (ssImg2) ssImg2.src = '';
+    // Não limpamos o src para evitar que a próxima abertura comece vazia e quebrada.
+    // A imagem anterior fica escondida e será substituída suavemente na próxima ativação.
 }
 
 
@@ -1356,7 +1355,6 @@ function desativarScreensaver() {
 // ==========================================
 const IMAGE_PROVIDER = 'picsum'; 
 
-// Variáveis auxiliares para o SourceSplash (caso decida usar)
 const ssTemasAmplos = [
     'nature', 'landscape', 'mountains', 'forest', 'ocean', 
     'architecture', 'city', 'night', 'sunset', 'galaxy', 
@@ -1369,13 +1367,9 @@ function carregarProximaImagemScreensaver() {
     const imgAtual = activeImageTag === 1 ? ssImg1 : ssImg2;
     let imageUrl = '';
 
-    // Seleciona o URL com base no provedor configurado
     if (IMAGE_PROVIDER === 'picsum') {
-        // Picsum Photos: Rápido, sem limites e com tamanho exato na URL. 
-        // Adicionamos ?random= para garantir que o navegador não faz cache da mesma foto.
         imageUrl = `https://picsum.photos/1920/1080?random=${Date.now()}`;
     } else {
-        // SourceSplash (com rotatividade de temas)
         let temaEscolhido;
         do {
             temaEscolhido = ssTemasAmplos[Math.floor(Math.random() * ssTemasAmplos.length)];
@@ -1388,24 +1382,20 @@ function carregarProximaImagemScreensaver() {
         imageUrl = `https://www.sourcesplash.com/i/random?q=${temaEscolhido}&seed=${randomSeed}&_=${Date.now()}`;
     }
 
-    console.log(`A carregar imagem [Provedor: ${IMAGE_PROVIDER}] ->`, imageUrl);
-
     const tempImg = new Image();
     
     tempImg.onload = () => {
-        // Validação de segurança exclusiva para o SourceSplash (placeholder 800x600)
         if (IMAGE_PROVIDER === 'sourcesplash' && tempImg.naturalWidth === 800 && tempImg.naturalHeight === 600) {
-            console.warn("Detectado placeholder 800x600 do SourceSplash. A saltar...");
             tempImg.onload = null;
             tempImg.onerror = null;
             setTimeout(carregarProximaImagemScreensaver, 500);
             return;
         }
 
-        console.log("Imagem carregada com sucesso:", tempImg.naturalWidth, "x", tempImg.naturalHeight);
+        // Atribui o src definitivo apenas AGORA que a imagem está 100% pronta
         imgAlvo.src = tempImg.src;
         
-        // Aplica o Fade suave
+        // Ativa a imagem nova e desativa a anterior com o fade suave
         imgAlvo.classList.add('active');
         imgAtual.classList.remove('active');
 
@@ -1415,12 +1405,12 @@ function carregarProximaImagemScreensaver() {
     };
 
     tempImg.onerror = (err) => {
-        console.error("Erro ao carregar imagem:", err);
         tempImg.onload = null;
         tempImg.onerror = null;
         setTimeout(carregarProximaImagemScreensaver, 1000);
     };
 
+    // Dispara o carregamento em background
     tempImg.src = imageUrl;
 }
 
