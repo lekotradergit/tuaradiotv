@@ -1515,7 +1515,7 @@ async function carregarProximoVideoPixabay() {
             if (isScreensaverActive) {
                 if (screensaverInterval) clearTimeout(screensaverInterval);
                 
-                const tempoEspera = Math.max(duracaoVideoMs - 1000, 5000); 
+                const tempoEspera = Math.max(duracaoVideoMs - 2000, 5000); 
                 screensaverInterval = setTimeout(() => {
                     carregarProximoVideoPixabay();
                 }, tempoEspera);
