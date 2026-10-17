@@ -1310,11 +1310,6 @@ async function iniciarApp() {
 
     // Dispara o carregamento do pool de vídeos em background (sem await)
     inicializarPoolVideos();
-    document.addEventListener('DOMContentLoaded', () => {
-        configurarVigiaDeVideos();
-    });
-
-
 }
 
 
@@ -1350,35 +1345,6 @@ const ssTemasAmplos = [
     'abstract', 'minimalist', 'travel', 'highway', 'river'
 ];
 let historicoTemas = [];
-
-// Função para anexar os protetores preventivos em ambas as tags de vídeo
-function configurarVigiaDeVideos() {
-    const videos = [ssVid1, ssVid2];
-
-    videos.forEach((vid, index) => {
-        // Disparado quando o vídeo para porque precisa de mais buffer (onde o play gigante costuma nascer)
-        vid.addEventListener('waiting', () => {
-            console.warn(`[Vigia] Vídeo ${index + 1} entrou em espera (waiting/buffer vazio). A prevenir overlay...`);
-            vid.classList.remove('active');
-            
-            // Força a transição para o próximo vídeo/imagem de forma limpa antes que a TV trave
-            if (typeof carregarProximoVideoPixabay === 'function') {
-                carregarProximoVideoPixabay();
-            }
-        });
-
-        // Disparado quando a rede sofre uma interrupção
-        vid.addEventListener('stalled', () => {
-            console.warn(`[Vigia] Rede travada (stalled) no vídeo ${index + 1}. A redirecionar...`);
-            vid.classList.remove('active');
-            
-            if (typeof carregarProximoVideoPixabay === 'function') {
-                carregarProximoVideoPixabay();
-            }
-        });
-    });
-}
-
 
 function reiniciarInatividade() {
     if (isScreensaverActive) {
