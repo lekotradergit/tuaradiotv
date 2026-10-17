@@ -629,6 +629,23 @@ video::-webkit-media-controls-overlay-play-button {
     pointer-events: none !important;
 }
 
+
+/* Bloqueio total de qualquer overlay ou painel de toque/controlos da TV */
+video {
+    object-fit: contain !important;
+    pointer-events: none !important; /* Impede qualquer interação que force o player a mostrar controlos */
+}
+
+/* Força a ocultação agressiva de qualquer elemento de mídia nativo da TV */
+video::-webkit-media-controls-start-playback-immersive-button,
+video::-webkit-media-controls-overlay-play-button {
+    display: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+}
+
+
+
 /* A mídia só fica visível quando ganha a classe .active */
 .ss-media {
     position: absolute;

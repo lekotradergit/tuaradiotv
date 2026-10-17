@@ -1492,68 +1492,58 @@ async function carregarProximoVideoPixabay() {
 
     const videoUrl = videoObj.videos.large ? videoObj.videos.large.url : videoObj.videos.medium.url;
 
-    // Limpa ouvintes anteriores para evitar acumulação de eventos
-    ssVid.oncanplaythrough = null;
-    ssVid.onplaying = null;
+    // Oculta o vídeo imediatamente para prevenir qualquer flash visual ou ícone
+    ssVid.classList.remove('active');
+    ssVid.pause();
+    ssVid.removeAttribute('src'); // Limpa o src anterior de forma total
+    ssVid.load();
+
+    // Limpa eventos antigos
+    ssVid.onloadeddata = null;
     ssVid.onended = null;
     ssVid.onerror = null;
-    ssVid.onstalled = null;
 
-    // Define o novo URL e inicia o carregamento em background
+    // Atribui o novo URL
     ssVid.src = videoUrl;
     ssVid.load();
 
-    let videoPronto = false;
+    let reproduzidoComSucesso = false;
 
-    // TIMEOUT DE SEGURANÇA CURTO (3.5 segundos): 
-    // Se a CDN demorar mais do que isto a responder, não fica com tela preta; salta logo para o próximo ou imagem.
-    const timeoutConexao = setTimeout(() => {
-        if (!videoPronto && isScreensaverActive) {
-            console.warn(`Vídeo ID: ${videoObj.id} demorou muito na rede. A ignorar para evitar tela preta...`);
-            ssVid.pause();
-            carregarProximaImagemScreensaver(); // Mostra uma imagem estática temporária em vez de travar
+    // Timeout de segurança: se em 4 segundos o vídeo não arrancar, passa para imagem/próximo
+    const safetyTimeout = setTimeout(() => {
+        if (!reproduzidoComSucesso && isScreensaverActive) {
+            console.warn("Timeout de carregamento do vídeo atingido. A usar imagem de fallback...");
+            carregarProximaImagemScreensaver();
         }
-    }, 3500);
+    }, 4000);
 
-    // Assim que tiver buffer suficiente para rodar sem engasgar
-    ssVid.oncanplaythrough = () => {
-        if (videoPronto || !isScreensaverActive) return;
-        videoPronto = true;
-        clearTimeout(timeoutConexao);
-
-        // Dispara o play imediatamente
+    // Usa onloadeddata que é o evento mais fiável em browsers restritos de Smart TV
+    ssVid.onloadeddata = () => {
+        if (reproduzidoComSucesso || !isScreensaverActive) return;
+        
         ssVid.play().then(() => {
-            // Só revela o vídeo na tela quando ele já tem garantia de fluidez
+            reproduzidoComSucesso = true;
+            clearTimeout(safetyTimeout);
+
+            // Só ativa a classe visível quando o play() for aceito sem bloqueios
             ssVid.classList.add('active');
             esconderCamadaImagens();
-            console.log(`► Vídeo a fluir perfeitamente [ID: ${videoObj.id}]`);
+            console.log(`► Vídeo a rodar sem overlay [ID: ${videoObj.id}]`);
         }).catch(e => {
-            if (e.name !== 'AbortError') {
-                console.warn("Erro de reprodução, a avançar...", e);
-                carregarProximoVideoPixabay();
-            }
+            console.warn("Bloqueio de reprodução detetado na TV:", e);
+            clearTimeout(safetyTimeout);
+            carregarProximaImagemScreensaver();
         });
     };
 
-    // QUANDO O VÍDEO TERMINAR NATURALMENTE
     ssVid.onended = () => {
         if (!isScreensaverActive) return;
-        
-        // Em vez de ocultar abruptamente gerando tela preta, 
-        // mantemos o último frame visível até o próximo carregar (ou disparamos de imediato)
         carregarProximoVideoPixabay();
     };
 
-    // Se houver falha de rede a meio
     ssVid.onerror = () => {
-        clearTimeout(timeoutConexao);
-        console.error("Erro no link do vídeo do Pixabay. A saltar...");
-        carregarProximaImagemScreensaver();
-    };
-
-    ssVid.onstalled = () => {
-        clearTimeout(timeoutConexao);
-        console.warn("Buffer travado (stalled). A passar para o próximo...");
+        clearTimeout(safetyTimeout);
+        console.error("Erro no stream do vídeo. A passar para imagem...");
         carregarProximaImagemScreensaver();
     };
 }
