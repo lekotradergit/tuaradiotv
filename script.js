@@ -1465,7 +1465,6 @@ function carregarProximaImagemScreensaver() {
 async function carregarProximoVideoPixabay() {
     if (!isScreensaverActive) return;
 
-    // Se por algum motivo o pool esvaziar, tenta recarregá-lo e usa imagens como fallback temporário
     if (globalVideoPlaylist.length === 0) {
         console.warn("Pool de vídeos vazio. A recarregar em background e a usar imagem temporária...");
         inicializarPoolVideos();
@@ -1473,15 +1472,12 @@ async function carregarProximoVideoPixabay() {
         return;
     }
 
-    // Se restarem menos de 10 vídeos na playlist, recarrega o pool silenciosamente em background
     if (globalVideoPlaylist.length < 10 && !isFetchingPool) {
         inicializarPoolVideos();
     }
 
-    // Retira o próximo vídeo da nossa lista em memória
     const videoObj = globalVideoPlaylist.shift();
 
-    // Regista no histórico recente (mantém os últimos 50 IDs)
     historicoVideosIds.push(videoObj.id);
     if (historicoVideosIds.length > 50) {
         historicoVideosIds.shift();
@@ -1492,48 +1488,65 @@ async function carregarProximoVideoPixabay() {
     const vidAlvo = activeMediaTag === 1 ? ssVid2 : ssVid1;
     const vidAtual = activeMediaTag === 1 ? ssVid1 : ssVid2;
 
+    // Garante que o vídeo alvo começa oculto para a TV não desenhar o ícone de play
+    vidAlvo.classList.remove('active');
     vidAlvo.src = videoUrl;
     vidAlvo.load();
 
     let videoIniciado = false;
 
-    vidAlvo.oncanplaythrough = () => {
+    // Disparado quando o vídeo efetivamente COMEÇAR a rodar frames (elimina o ícone de play)
+    vidAlvo.onplaying = () => {
         if (videoIniciado || !isScreensaverActive) return;
         videoIniciado = true;
 
+        vidAlvo.classList.add('active');
+        vidAtual.classList.remove('active');
+        
+        // Pausa o vídeo anterior após a transição de fade (1 segundo)
+        setTimeout(() => {
+            if (vidAtual && !vidAtual.paused) vidAtual.pause();
+        }, 1000);
+
+        esconderCamadaImagens();
+        activeMediaTag = activeMediaTag === 1 ? 2 : 1;
+
+        // PROGRAMA A TROCA ANTECIPADA (Fade 2 segundos antes do fim do vídeo)
         const duracaoVideoMs = (vidAlvo.duration || 15) * 1000;
-        console.log(`A reproduzir vídeo do Pool [ID: ${videoObj.id}] - Duração: ${vidAlvo.duration}s | Restantes no Pool: ${globalVideoPlaylist.length}`);
+        const tempoEspera = Math.max(duracaoVideoMs - 2000, 3000); // Troca 2s antes para transição fluida
 
-        vidAlvo.play().then(() => {
-            vidAlvo.classList.add('active');
-            vidAtual.classList.remove('active');
-            vidAtual.pause();
-
-            esconderCamadaImagens();
-            activeMediaTag = activeMediaTag === 1 ? 2 : 1;
-
-            if (isScreensaverActive) {
-                if (screensaverInterval) clearTimeout(screensaverInterval);
-                
-                const tempoEspera = Math.max(duracaoVideoMs - 1000, 5000); 
-                screensaverInterval = setTimeout(() => {
-                    carregarProximoVideoPixabay();
-                }, tempoEspera);
-            }
-        }).catch(e => {
-            console.error("Erro ao reproduzir vídeo do pool:", e);
+        if (screensaverInterval) clearTimeout(screensaverInterval);
+        screensaverInterval = setTimeout(() => {
             carregarProximoVideoPixabay();
-        });
+        }, tempoEspera);
+    };
+
+    // FALLBACK 1: Se o vídeo chegar ao fim absoluto antes do timer, força a troca imediata
+    vidAlvo.onended = () => {
+        if (isScreensaverActive) {
+            if (screensaverInterval) clearTimeout(screensaverInterval);
+            carregarProximoVideoPixabay();
+        }
+    };
+
+    // FALLBACK 2: Se a TV demorar a disparar onplaying, tenta forçar a reprodução após o buffer
+    vidAlvo.oncanplaythrough = () => {
+        if (!videoIniciado) {
+            vidAlvo.play().catch(e => {
+                console.error("Erro ao dar play no vídeo:", e);
+                carregarProximoVideoPixabay();
+            });
+        }
     };
 
     vidAlvo.onstalled = () => {
-        console.warn("Vídeo travou por buffer/rede. A passar para o próximo...");
+        console.warn("Vídeo travou por buffer na TV. A avançar...");
         if (screensaverInterval) clearTimeout(screensaverInterval);
         carregarProximoVideoPixabay();
     };
 
     vidAlvo.onerror = () => {
-        console.error("Erro no ficheiro de vídeo. A avançar...");
+        console.error("Erro ao carregar o vídeo na TV. A avançar...");
         if (screensaverInterval) clearTimeout(screensaverInterval);
         carregarProximoVideoPixabay();
     };

@@ -706,3 +706,16 @@ body, html {
 }
 
 
+/* Remove controlos nativos e ícone de play gigante em browsers de TV */
+video::-webkit-media-controls,
+video::-webkit-media-controls-start-playback-button,
+video::-webkit-media-controls-play-button {
+    display: none !important;
+    -webkit-appearance: none !important;
+    opacity: 0 !important;
+}
+
+/* Garante fundo preto no video para não mostrar posters vazios */
+.ss-media {
+    background-color: #000 !important;
+}
