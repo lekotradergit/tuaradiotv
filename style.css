@@ -615,19 +615,19 @@ body, html {
     pointer-events: none;
 }
 
-/* Duas tags img sobrepostas para o efeito Fade fluido */
-.ss-image {
+/* Substitui .ss-image por .ss-media para abranger imagens e vídeos */
+.ss-media {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    object-fit: contain; /* Altera de 'cover' para 'contain' */
+    object-fit: contain; /* Ou 'cover', conforme preferência */
     opacity: 0;
     transition: opacity 1s ease-in-out;
 }
 
-.ss-image.active {
+.ss-media.active {
     opacity: 1;
 }
 
@@ -636,26 +636,18 @@ body, html {
     position: absolute;
     bottom: 20px;
     left: 25px;
-    /* Altera de width fixo para max-width */
     max-width: 200px;
-    /* Define largura automática para encolher de acordo com o texto */
     width: max-content; 
-    
-    /* Fundo praticamente transparente e desfoque sutil */
     background: rgba(0, 0, 0, 0.15);
     backdrop-filter: blur(4px);
-    
-    /* Borda e sombra extremamente suaves para manter a leitura */
     border: 1px solid rgba(255, 255, 255, 0.05);
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-    
     padding: 6px 6px;
     border-radius: 5px;
     color: #fff;
     z-index: 100000;
 }
 
-/* Aplica o corte de texto quer seja h3, span ou tenha a tag id/classe */
 .ss-info h3, 
 .ss-info span,
 #ssStationName {
@@ -675,6 +667,8 @@ body, html {
     margin: 0;
     text-align: center;
 }
+
+/* Restantes estilos mantidos inalterados... */
 
 /* Coloca o nome da rádio e o país lado a lado na mesma linha */
 .player-details {

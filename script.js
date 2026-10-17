@@ -1,5 +1,37 @@
 console.log("=== SCRIPT DE RÁDIO TV INICIADO ===");
 
+
+// ==========================================
+// CONFIGURAÇÃO DO POOL DE VÍDEOS (PIXABAY)
+// ==========================================
+let globalVideoPlaylist = [];     // A nossa "playlist gigante" com centenas de vídeos
+let historicoVideosIds = [];       // Histórico de IDs para evitar qualquer repetição recente
+let isFetchingPool = false;        // Evita chamadas duplicadas simultâneas
+
+const pixabayTemas = [
+    'flowers',
+    'fruits',
+    'nature cinematic landscape',
+    'wetdrops',
+    'sea',
+    'snow',
+    'forest river drone',
+    'ocean waves sunset',
+    'mountains clouds aerial',
+    'city night traffic timelapse',
+    'galaxy stars night sky',
+    'waterfall tropical stream',
+    'autumn leaves wind',
+    'dolphins',
+    'fisches',
+    'turtles',
+    'birds',
+    'animals',
+    'tropical beach aerial'
+];
+
+
+
 let servidoresDisponiveis = [
     'de1.api.radio-browser.info',
     'nl1.api.radio-browser.info',
@@ -1274,27 +1306,45 @@ async function iniciarApp() {
     await detetarLocalizacao();
     await pesquisarRadios();
     await atualizarListaSecundaria();
-
     focarItemInicial();
+
+    // Dispara o carregamento do pool de vídeos em background (sem await)
+    inicializarPoolVideos();
 }
 
 
 // ==========================================
 // GESTÃO DO PROTECTOR DE ECRÃ (SCREENSAVER AMBIENTE)
 // ==========================================
-const SOURCESPLASH_API_KEY = "ss_ERwVP3SaJpsdRtmyWiu2ZIdn9B2Wbq6cdeghHFt7"; // Substitua pela sua chave SourceSplash real se necessário, ou use o endpoint direto
+const SOURCESPLASH_API_KEY = "ss_ERwVP3SaJpsdRtmyWiu2ZIdn9B2Wbq6cdeghHFt7"; 
 let inactivityTimer = null;
 let screensaverInterval = null;
 let isScreensaverActive = false;
-const INACTIVITY_LIMIT_MS = 20000; // 45 segundos de inatividade para ativar
-const IMAGE_INTERVAL_MS = 20000;   // 30 segundos por imagem
+const INACTIVITY_LIMIT_MS = 20000; // 20 segundos de inatividade
+const MEDIA_INTERVAL_MS = 20000;   // 20 segundos por imagem
+
+// ==========================================
+// CONFIGURAÇÃO DOS SELECORES DE MÍDIA
+// ==========================================
+const MEDIA_TYPE = 'video';              // Escolha: 'image' ou 'video'
+const IMAGE_PROVIDER = 'picsum';         // Escolha: 'picsum' ou 'sourcesplash'
+const PIXABAY_API_KEY = '58081266-93bf509ee090d6739835d0d09'; // Coloque aqui a sua chave Pixabay se usar vídeos
 
 const screensaverOverlay = document.getElementById('screensaverOverlay');
 const ssImg1 = document.getElementById('ssImg1');
 const ssImg2 = document.getElementById('ssImg2');
+const ssVid1 = document.getElementById('ssVid1');
+const ssVid2 = document.getElementById('ssVid2');
 const ssStationName = document.getElementById('ssStationName');
 
-let activeImageTag = 1; // Controla qual tag img está visível
+let activeMediaTag = 1; // Controla qual tag (1 ou 2) está visível
+let pixabayVideosCache = [];
+const ssTemasAmplos = [
+    'nature', 'landscape', 'mountains', 'forest', 'ocean', 
+    'architecture', 'city', 'night', 'sunset', 'galaxy', 
+    'abstract', 'minimalist', 'travel', 'highway', 'river'
+];
+let historicoTemas = [];
 
 function reiniciarInatividade() {
     if (isScreensaverActive) {
@@ -1302,7 +1352,6 @@ function reiniciarInatividade() {
     }
     clearTimeout(inactivityTimer);
     inactivityTimer = setTimeout(() => {
-        // Só ativa o screensaver se houver uma rádio a tocar ou se o utilizador estiver inativo na app
         ativarScreensaver();
     }, INACTIVITY_LIMIT_MS);
 }
@@ -1316,18 +1365,16 @@ function ativarScreensaver() {
         screensaverOverlay.classList.add('visible');
     }
 
-    // Atualiza o nome da rádio atual no screensaver se houver
     if (ssStationName && playingTitle) {
-        ssStationName.textContent =  `🎵 ${playingTitle.textContent}`; 
+        ssStationName.textContent = `🎵 ${playingTitle.textContent}`; 
     }
 
-    carregarProximaImagemScreensaver();
+    carregarProximaMidiaScreensaver();
     
-    // Configura o timer para trocar a imagem a cada 30 segundos
     if (screensaverInterval) clearInterval(screensaverInterval);
     screensaverInterval = setInterval(() => {
-        carregarProximaImagemScreensaver();
-    }, IMAGE_INTERVAL_MS);
+        carregarProximaMidiaScreensaver();
+    }, MEDIA_INTERVAL_MS);
 }
 
 function desativarScreensaver() {
@@ -1344,27 +1391,26 @@ function desativarScreensaver() {
         screensaverOverlay.classList.add('hidden');
     }
 
-    // Não limpamos o src para evitar que a próxima abertura comece vazia e quebrada.
-    // A imagem anterior fica escondida e será substituída suavemente na próxima ativação.
+    // Pausa e limpa os vídeos se estiverem a ser usados para poupar recursos
+    if (typeof ssVid1 !== 'undefined' && ssVid1) { ssVid1.pause(); ssVid1.src = ''; }
+    if (typeof ssVid2 !== 'undefined' && ssVid2) { ssVid2.pause(); ssVid2.src = ''; }
 }
 
+// Direcionador centralizado com base no MEDIA_TYPE escolhido
+function carregarProximaMidiaScreensaver() {
+    if (MEDIA_TYPE === 'video') {
+        carregarProximoVideoPixabay();
+    } else {
+        carregarProximaImagemScreensaver();
+    }
+}
 
-// ==========================================
-// CONFIGURAÇÃO DO PROVEDOR DE IMAGENS
-// Escolha entre: 'picsum' ou 'sourcesplash'
-// ==========================================
-const IMAGE_PROVIDER = 'picsum'; 
-
-const ssTemasAmplos = [
-    'nature', 'landscape', 'mountains', 'forest', 'ocean', 
-    'architecture', 'city', 'night', 'sunset', 'galaxy', 
-    'abstract', 'minimalist', 'travel', 'highway', 'river'
-];
-let historicoTemas = [];
-
+// ------------------------------------------
+// MÓDULO DE IMAGENS (Picsum / SourceSplash)
+// ------------------------------------------
 function carregarProximaImagemScreensaver() {
-    const imgAlvo = activeImageTag === 1 ? ssImg2 : ssImg1;
-    const imgAtual = activeImageTag === 1 ? ssImg1 : ssImg2;
+    const imgAlvo = activeMediaTag === 1 ? ssImg2 : ssImg1;
+    const imgAtual = activeMediaTag === 1 ? ssImg1 : ssImg2;
     let imageUrl = '';
 
     if (IMAGE_PROVIDER === 'picsum') {
@@ -1392,14 +1438,14 @@ function carregarProximaImagemScreensaver() {
             return;
         }
 
-        // Atribui o src definitivo apenas AGORA que a imagem está 100% pronta
         imgAlvo.src = tempImg.src;
-        
-        // Ativa a imagem nova e desativa a anterior com o fade suave
         imgAlvo.classList.add('active');
         imgAtual.classList.remove('active');
 
-        activeImageTag = activeImageTag === 1 ? 2 : 1;
+        // Garante que esconde os vídeos caso estivessem ativos
+        esconderCamadaVideos();
+
+        activeMediaTag = activeMediaTag === 1 ? 2 : 1;
         tempImg.onload = null;
         tempImg.onerror = null;
     };
@@ -1410,8 +1456,161 @@ function carregarProximaImagemScreensaver() {
         setTimeout(carregarProximaImagemScreensaver, 1000);
     };
 
-    // Dispara o carregamento em background
     tempImg.src = imageUrl;
+}
+
+// ==========================================
+// MÓDULO DE VÍDEOS (Pixabay API - Apenas Full HD / 4K Horizontais)
+// ==========================================
+async function carregarProximoVideoPixabay() {
+    if (!isScreensaverActive) return;
+
+    // Se por algum motivo o pool esvaziar, tenta recarregá-lo e usa imagens como fallback temporário
+    if (globalVideoPlaylist.length === 0) {
+        console.warn("Pool de vídeos vazio. A recarregar em background e a usar imagem temporária...");
+        inicializarPoolVideos();
+        carregarProximaImagemScreensaver();
+        return;
+    }
+
+    // Se restarem menos de 10 vídeos na playlist, recarrega o pool silenciosamente em background
+    if (globalVideoPlaylist.length < 10 && !isFetchingPool) {
+        inicializarPoolVideos();
+    }
+
+    // Retira o próximo vídeo da nossa lista em memória
+    const videoObj = globalVideoPlaylist.shift();
+
+    // Regista no histórico recente (mantém os últimos 50 IDs)
+    historicoVideosIds.push(videoObj.id);
+    if (historicoVideosIds.length > 50) {
+        historicoVideosIds.shift();
+    }
+
+    const videoUrl = videoObj.videos.large ? videoObj.videos.large.url : videoObj.videos.medium.url;
+
+    const vidAlvo = activeMediaTag === 1 ? ssVid2 : ssVid1;
+    const vidAtual = activeMediaTag === 1 ? ssVid1 : ssVid2;
+
+    vidAlvo.src = videoUrl;
+    vidAlvo.load();
+
+    let videoIniciado = false;
+
+    vidAlvo.oncanplaythrough = () => {
+        if (videoIniciado || !isScreensaverActive) return;
+        videoIniciado = true;
+
+        const duracaoVideoMs = (vidAlvo.duration || 15) * 1000;
+        console.log(`A reproduzir vídeo do Pool [ID: ${videoObj.id}] - Duração: ${vidAlvo.duration}s | Restantes no Pool: ${globalVideoPlaylist.length}`);
+
+        vidAlvo.play().then(() => {
+            vidAlvo.classList.add('active');
+            vidAtual.classList.remove('active');
+            vidAtual.pause();
+
+            esconderCamadaImagens();
+            activeMediaTag = activeMediaTag === 1 ? 2 : 1;
+
+            if (isScreensaverActive) {
+                if (screensaverInterval) clearTimeout(screensaverInterval);
+                
+                const tempoEspera = Math.max(duracaoVideoMs - 1000, 5000); 
+                screensaverInterval = setTimeout(() => {
+                    carregarProximoVideoPixabay();
+                }, tempoEspera);
+            }
+        }).catch(e => {
+            console.error("Erro ao reproduzir vídeo do pool:", e);
+            carregarProximoVideoPixabay();
+        });
+    };
+
+    vidAlvo.onstalled = () => {
+        console.warn("Vídeo travou por buffer/rede. A passar para o próximo...");
+        if (screensaverInterval) clearTimeout(screensaverInterval);
+        carregarProximoVideoPixabay();
+    };
+
+    vidAlvo.onerror = () => {
+        console.error("Erro no ficheiro de vídeo. A avançar...");
+        if (screensaverInterval) clearTimeout(screensaverInterval);
+        carregarProximoVideoPixabay();
+    };
+}
+
+async function inicializarPoolVideos() {
+    if (isFetchingPool) return;
+    isFetchingPool = true;
+    console.log("A preparar o Pool Global de vídeos do Pixabay em background...");
+
+    try {
+        // 1. Seleciona randomicamente até 10 temas da lista
+        const temasEmbaralhados = [...pixabayTemas].sort(() => Math.random() - 0.5);
+        const temasSelecionados = temasEmbaralhados.slice(0, 10);
+
+        // 2. Cria as promessas de requisição em paralelo para cada tema (per_page=200)
+        const promessasFetch = temasSelecionados.map(async (tema) => {
+            const temaFormatado = tema.replace(/ /g, '+');
+            // Alterna a página aleatoriamente (1 ou 2) para diversificar ainda mais
+            const pagina = Math.floor(Math.random() * 2) + 1;
+            const urlApi = `https://pixabay.com/api/videos/?key=${PIXABAY_API_KEY}&q=${temaFormatado}&page=${pagina}&per_page=200&video_type=film`;
+
+            try {
+                const resposta = await fetch(urlApi);
+                const dados = await resposta.json();
+                return (dados && dados.hits) ? dados.hits : [];
+            } catch (err) {
+                console.warn(`Falha ao buscar o tema "${tema}":`, err);
+                return [];
+            }
+        });
+
+        // Aguarda todos os pedidos terminarem em paralelo
+        const resultados = await Promise.all(promessasFetch);
+        
+        // 3. Junta todos os resultados num único array plano
+        let todosOsVideosBrutos = resultados.flat();
+
+        // 4. Filtra apenas vídeos Full HD horizontais e limpos
+        let videosValidos = todosOsVideosBrutos.filter(v => {
+            const formatoLarge = v.videos && v.videos.large;
+            const ehHorizontal = formatoLarge && formatoLarge.width >= 1920 && formatoLarge.width > formatoLarge.height;
+            const naoRepetido = !historicoVideosIds.includes(v.id);
+            return ehHorizontal && naoRepetido;
+        });
+
+        // Se o filtro estrito for muito restritivo, aceita qualquer formato large disponível
+        if (videosValidos.length === 0) {
+            videosValidos = todosOsVideosBrutos.filter(v => v.videos && v.videos.large);
+        }
+
+        // 5. Embaralha (Shuffle) toda a lista gigante para garantir aleatoriedade total
+        globalVideoPlaylist = videosValidos.sort(() => Math.random() - 0.5);
+
+        console.log(`Pool Global de Vídeos pronto! Total carregado: ${globalVideoPlaylist.length} vídeos.`);
+    } catch (erro) {
+        console.error("Erro crítico ao montar o Pool de Vídeos:", erro);
+    } finally {
+        isFetchingPool = false;
+    }
+}
+
+
+
+
+
+
+
+
+function esconderCamadaVideos() {
+    if (typeof ssVid1 !== 'undefined' && ssVid1) { ssVid1.classList.remove('active'); ssVid1.pause(); }
+    if (typeof ssVid2 !== 'undefined' && ssVid2) { ssVid2.classList.remove('active'); ssVid2.pause(); }
+}
+
+function esconderCamadaImagens() {
+    if (typeof ssImg1 !== 'undefined' && ssImg1) ssImg1.classList.remove('active');
+    if (typeof ssImg2 !== 'undefined' && ssImg2) ssImg2.classList.remove('active');
 }
 
 // Função de apoio para garantir que a TV nunca fica preta ou com erro visível
