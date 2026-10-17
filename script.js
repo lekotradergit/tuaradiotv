@@ -1459,19 +1459,13 @@ function carregarProximaImagemScreensaver() {
     tempImg.src = imageUrl;
 }
 
-
-
-// Captura a tag de vídeo única (coloque no topo do script ou certifique-se que existe)
-const ssVid = document.getElementById('ssVid');
-
+// ==========================================
+// MÓDULO DE VÍDEOS (Pixabay API - Apenas Full HD / 4K Horizontais)
+// ==========================================
 async function carregarProximoVideoPixabay() {
     if (!isScreensaverActive) return;
 
-    if (screensaverInterval) {
-        clearTimeout(screensaverInterval);
-        screensaverInterval = null;
-    }
-
+    // Se por algum motivo o pool esvaziar, tenta recarregá-lo e usa imagens como fallback temporário
     if (globalVideoPlaylist.length === 0) {
         console.warn("Pool de vídeos vazio. A recarregar em background...");
         inicializarPoolVideos();
@@ -1479,12 +1473,15 @@ async function carregarProximoVideoPixabay() {
         return;
     }
 
+    // Se restarem menos de 10 vídeos na playlist, recarrega o pool silenciosamente em background
     if (globalVideoPlaylist.length < 10 && !isFetchingPool) {
         inicializarPoolVideos();
     }
 
+    // Retira o próximo vídeo da nossa lista em memória
     const videoObj = globalVideoPlaylist.shift();
 
+    // Regista no histórico recente (mantém os últimos 50 IDs)
     historicoVideosIds.push(videoObj.id);
     if (historicoVideosIds.length > 50) {
         historicoVideosIds.shift();
@@ -1492,59 +1489,53 @@ async function carregarProximoVideoPixabay() {
 
     const videoUrl = videoObj.videos.large ? videoObj.videos.large.url : videoObj.videos.medium.url;
 
-    // Oculta o vídeo imediatamente para prevenir qualquer flash visual ou ícone
-    ssVid.classList.remove('active');
-    ssVid.pause();
-    ssVid.removeAttribute('src'); // Limpa o src anterior de forma total
-    ssVid.load();
+    const vidAlvo = activeMediaTag === 1 ? ssVid2 : ssVid1;
+    const vidAtual = activeMediaTag === 1 ? ssVid1 : ssVid2;
 
-    // Limpa eventos antigos
-    ssVid.onloadeddata = null;
-    ssVid.onended = null;
-    ssVid.onerror = null;
+    vidAlvo.src = videoUrl;
+    vidAlvo.load();
 
-    // Atribui o novo URL
-    ssVid.src = videoUrl;
-    ssVid.load();
+    let videoIniciado = false;
 
-    let reproduzidoComSucesso = false;
+    vidAlvo.oncanplaythrough = () => {
+        if (videoIniciado || !isScreensaverActive) return;
+        videoIniciado = true;
 
-    // Timeout de segurança: se em 4 segundos o vídeo não arrancar, passa para imagem/próximo
-    const safetyTimeout = setTimeout(() => {
-        if (!reproduzidoComSucesso && isScreensaverActive) {
-            console.warn("Timeout de carregamento do vídeo atingido. A usar imagem de fallback...");
-            carregarProximaImagemScreensaver();
-        }
-    }, 4000);
+        const duracaoVideoMs = (vidAlvo.duration || 15) * 1000;
+        console.log(`A reproduzir vídeo do Pool [ID: ${videoObj.id}] - Duração: ${vidAlvo.duration}s | Restantes no Pool: ${globalVideoPlaylist.length}`);
 
-    // Usa onloadeddata que é o evento mais fiável em browsers restritos de Smart TV
-    ssVid.onloadeddata = () => {
-        if (reproduzidoComSucesso || !isScreensaverActive) return;
-        
-        ssVid.play().then(() => {
-            reproduzidoComSucesso = true;
-            clearTimeout(safetyTimeout);
+        vidAlvo.play().then(() => {
+            vidAlvo.classList.add('active');
+            vidAtual.classList.remove('active');
+            vidAtual.pause();
 
-            // Só ativa a classe visível quando o play() for aceito sem bloqueios
-            ssVid.classList.add('active');
             esconderCamadaImagens();
-            console.log(`► Vídeo a rodar sem overlay [ID: ${videoObj.id}]`);
+            activeMediaTag = activeMediaTag === 1 ? 2 : 1;
+
+            if (isScreensaverActive) {
+                if (screensaverInterval) clearTimeout(screensaverInterval);
+                
+                const tempoEspera = Math.max(duracaoVideoMs - 1000, 5000); 
+                screensaverInterval = setTimeout(() => {
+                    carregarProximoVideoPixabay();
+                }, tempoEspera);
+            }
         }).catch(e => {
-            console.warn("Bloqueio de reprodução detetado na TV:", e);
-            clearTimeout(safetyTimeout);
-            carregarProximaImagemScreensaver();
+            console.error("Erro ao reproduzir vídeo do pool:", e);
+            carregarProximoVideoPixabay();
         });
     };
 
-    ssVid.onended = () => {
-        if (!isScreensaverActive) return;
+    vidAlvo.onstalled = () => {
+        console.warn("Vídeo travou por buffer/rede. A passar para o próximo...");
+        if (screensaverInterval) clearTimeout(screensaverInterval);
         carregarProximoVideoPixabay();
     };
 
-    ssVid.onerror = () => {
-        clearTimeout(safetyTimeout);
-        console.error("Erro no stream do vídeo. A passar para imagem...");
-        carregarProximaImagemScreensaver();
+    vidAlvo.onerror = () => {
+        console.error("Erro no ficheiro de vídeo. A avançar...");
+        if (screensaverInterval) clearTimeout(screensaverInterval);
+        carregarProximoVideoPixabay();
     };
 }
 

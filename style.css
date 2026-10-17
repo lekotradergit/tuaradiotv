@@ -615,53 +615,20 @@ body, html {
     pointer-events: none;
 }
 
-/* Esconde controlos e botão de play nativo da TV de forma absoluta */
-video::-webkit-media-controls,
-video::-webkit-media-controls-panel,
-video::-webkit-media-controls-panel-container,
-video::-webkit-media-controls-start-playback-button,
-video::-webkit-media-controls-play-button,
-video::-webkit-media-controls-overlay-play-button {
-    display: none !important;
-    -webkit-appearance: none !important;
-    opacity: 0 !important;
-    visibility: hidden !important;
-    pointer-events: none !important;
-}
-
-
-/* Bloqueio total de qualquer overlay ou painel de toque/controlos da TV */
-video {
-    object-fit: contain !important;
-    pointer-events: none !important; /* Impede qualquer interação que force o player a mostrar controlos */
-}
-
-/* Força a ocultação agressiva de qualquer elemento de mídia nativo da TV */
-video::-webkit-media-controls-start-playback-immersive-button,
-video::-webkit-media-controls-overlay-play-button {
-    display: none !important;
-    opacity: 0 !important;
-    visibility: hidden !important;
-}
-
-
-
-/* A mídia só fica visível quando ganha a classe .active */
+/* Substitui .ss-image por .ss-media para abranger imagens e vídeos */
 .ss-media {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    object-fit: contain;
+    object-fit: contain; /* Ou 'cover', conforme preferência */
     opacity: 0;
-    display: none; /* Garante que não é desenhado na tela enquanto carrega */
-    background-color: #000000 !important;
+    transition: opacity 1s ease-in-out;
 }
 
 .ss-media.active {
     opacity: 1;
-    display: block !important; /* Só é exibido quando estiver EFETIVAMENTE a rodar */
 }
 
 /* Informação discreta no canto da TV durante o screensaver */
