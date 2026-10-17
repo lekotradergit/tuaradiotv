@@ -615,8 +615,21 @@ body, html {
     pointer-events: none;
 }
 
-/* Substitui .ss-image por .ss-media para abranger imagens e vídeos */
-/* Mídia única e sequencial (sem transições pesadas para poupar a TV) */
+/* Esconde controlos e botão de play nativo da TV de forma absoluta */
+video::-webkit-media-controls,
+video::-webkit-media-controls-panel,
+video::-webkit-media-controls-panel-container,
+video::-webkit-media-controls-start-playback-button,
+video::-webkit-media-controls-play-button,
+video::-webkit-media-controls-overlay-play-button {
+    display: none !important;
+    -webkit-appearance: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+}
+
+/* A mídia só fica visível quando ganha a classe .active */
 .ss-media {
     position: absolute;
     top: 0;
@@ -625,11 +638,13 @@ body, html {
     height: 100%;
     object-fit: contain;
     opacity: 0;
-    background-color: #000 !important;
+    display: none; /* Garante que não é desenhado na tela enquanto carrega */
+    background-color: #000000 !important;
 }
 
 .ss-media.active {
     opacity: 1;
+    display: block !important; /* Só é exibido quando estiver EFETIVAMENTE a rodar */
 }
 
 /* Informação discreta no canto da TV durante o screensaver */
