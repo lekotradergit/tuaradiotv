@@ -1517,8 +1517,8 @@ async function carregarProximoVideoPixabay() {
                 if (screensaverInterval) clearTimeout(screensaverInterval);
                 
                 // Exemplo: 4 segundos antes do vídeo atual acabar, começamos a preparar o próximo em background
-                const tempoParaAntecipar = Math.max(duracaoVideoMs - 4000, 2000); 
-                const duracaoRestanteAteFim = 4000; // O tempo que falta para o corte seco
+                const tempoParaAntecipar = Math.max(duracaoVideoMs - 10000, 2000); 
+                const duracaoRestanteAteFim = 10000; // O tempo que falta para o corte seco
 
                 // 1. Primeiro timer: Apenas pré-carrega o próximo vídeo silenciosamente na outra tag
                 screensaverInterval = setTimeout(() => {
