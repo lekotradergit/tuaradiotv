@@ -1467,7 +1467,6 @@ const ssVid = document.getElementById('ssVid');
 async function carregarProximoVideoPixabay() {
     if (!isScreensaverActive) return;
 
-    // Cancela temporizadores pendentes
     if (screensaverInterval) {
         clearTimeout(screensaverInterval);
         screensaverInterval = null;
@@ -1493,68 +1492,69 @@ async function carregarProximoVideoPixabay() {
 
     const videoUrl = videoObj.videos.large ? videoObj.videos.large.url : videoObj.videos.medium.url;
 
-    // 1. OCULTA O VÍDEO IMEDIATAMENTE antes de mudar o SRC (evita o ícone de play)
-    ssVid.classList.remove('active');
-    
-    // Limpa eventos anteriores
+    // Limpa ouvintes anteriores para evitar acumulação de eventos
+    ssVid.oncanplaythrough = null;
     ssVid.onplaying = null;
     ssVid.onended = null;
     ssVid.onerror = null;
     ssVid.onstalled = null;
 
+    // Define o novo URL e inicia o carregamento em background
     ssVid.src = videoUrl;
     ssVid.load();
 
-    let videoComecou = false;
+    let videoPronto = false;
 
-    // TIMEOUT DE SEGURANÇA: Se a TV ficar "a oscilar" / travada a carregar mais de 5s, pula o vídeo
-    const carregarTimeout = setTimeout(() => {
-        if (!videoComecou && isScreensaverActive) {
-            console.warn(`Vídeo ID: ${videoObj.id} demorou muito a responder na TV. A ignorar...`);
+    // TIMEOUT DE SEGURANÇA CURTO (3.5 segundos): 
+    // Se a CDN demorar mais do que isto a responder, não fica com tela preta; salta logo para o próximo ou imagem.
+    const timeoutConexao = setTimeout(() => {
+        if (!videoPronto && isScreensaverActive) {
+            console.warn(`Vídeo ID: ${videoObj.id} demorou muito na rede. A ignorar para evitar tela preta...`);
             ssVid.pause();
-            carregarProximoVideoPixabay();
+            carregarProximaImagemScreensaver(); // Mostra uma imagem estática temporária em vez de travar
         }
-    }, 5000);
+    }, 3500);
 
-    // 2. SÓ MOSTRA O VÍDEO NA TELA QUANDO ELE ESTIVER A RODAR FRAMES REAIS
-    ssVid.onplaying = () => {
-        if (videoComecou || !isScreensaverActive) return;
-        videoComecou = true;
-        clearTimeout(carregarTimeout); // Cancela o timeout de segurança
+    // Assim que tiver buffer suficiente para rodar sem engasgar
+    ssVid.oncanplaythrough = () => {
+        if (videoPronto || !isScreensaverActive) return;
+        videoPronto = true;
+        clearTimeout(timeoutConexao);
 
-        // Agora sim: revela o vídeo na tela sem ícone de play!
-        ssVid.classList.add('active');
-        esconderCamadaImagens();
-        console.log(`► A reproduzir fluido: Vídeo ID ${videoObj.id}`);
+        // Dispara o play imediatamente
+        ssVid.play().then(() => {
+            // Só revela o vídeo na tela quando ele já tem garantia de fluidez
+            ssVid.classList.add('active');
+            esconderCamadaImagens();
+            console.log(`► Vídeo a fluir perfeitamente [ID: ${videoObj.id}]`);
+        }).catch(e => {
+            if (e.name !== 'AbortError') {
+                console.warn("Erro de reprodução, a avançar...", e);
+                carregarProximoVideoPixabay();
+            }
+        });
     };
 
-    // Tenta forçar o início da reprodução
-    ssVid.play().catch(e => {
-        console.warn("Autoplay/Play pendente na TV...", e);
-    });
-
-    // 3. QUANDO O VÍDEO TERMINAR NATURALMENTE: Oculta e chama o próximo
+    // QUANDO O VÍDEO TERMINAR NATURALMENTE
     ssVid.onended = () => {
-        if (isScreensaverActive) {
-            console.log("Vídeo finalizado. A passar para o próximo...");
-            ssVid.classList.remove('active'); // Oculta antes do próximo
-            carregarProximoVideoPixabay();
-        }
+        if (!isScreensaverActive) return;
+        
+        // Em vez de ocultar abruptamente gerando tela preta, 
+        // mantemos o último frame visível até o próximo carregar (ou disparamos de imediato)
+        carregarProximoVideoPixabay();
     };
 
-    // Tratamento de erros de rede ou ficheiro corrompido
+    // Se houver falha de rede a meio
     ssVid.onerror = () => {
-        clearTimeout(carregarTimeout);
-        console.error("Erro no ficheiro do vídeo. A saltar...");
-        ssVid.classList.remove('active');
-        carregarProximoVideoPixabay();
+        clearTimeout(timeoutConexao);
+        console.error("Erro no link do vídeo do Pixabay. A saltar...");
+        carregarProximaImagemScreensaver();
     };
 
     ssVid.onstalled = () => {
-        clearTimeout(carregarTimeout);
-        console.warn("Sinal de rede interrompido (stalled). A saltar vídeo...");
-        ssVid.classList.remove('active');
-        carregarProximoVideoPixabay();
+        clearTimeout(timeoutConexao);
+        console.warn("Buffer travado (stalled). A passar para o próximo...");
+        carregarProximaImagemScreensaver();
     };
 }
 
