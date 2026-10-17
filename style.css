@@ -616,15 +616,16 @@ body, html {
 }
 
 /* Substitui .ss-image por .ss-media para abranger imagens e vídeos */
+/* Mídia única e sequencial (sem transições pesadas para poupar a TV) */
 .ss-media {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    object-fit: contain; /* Ou 'cover', conforme preferência */
+    object-fit: contain;
     opacity: 0;
-    transition: opacity 1s ease-in-out;
+    background-color: #000 !important;
 }
 
 .ss-media.active {
