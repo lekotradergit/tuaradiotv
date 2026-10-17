@@ -1512,13 +1512,24 @@ async function carregarProximoVideoPixabay() {
             esconderCamadaImagens();
             activeMediaTag = activeMediaTag === 1 ? 2 : 1;
 
+
             if (isScreensaverActive) {
                 if (screensaverInterval) clearTimeout(screensaverInterval);
                 
-                const tempoEspera = Math.max(duracaoVideoMs - 1000, 5000); 
+                // Exemplo: 4 segundos antes do vídeo atual acabar, começamos a preparar o próximo em background
+                const tempoParaAntecipar = Math.max(duracaoVideoMs - 4000, 2000); 
+                const duracaoRestanteAteFim = 4000; // O tempo que falta para o corte seco
+
+                // 1. Primeiro timer: Apenas pré-carrega o próximo vídeo silenciosamente na outra tag
                 screensaverInterval = setTimeout(() => {
-                    carregarProximoVideoPixabay();
-                }, tempoEspera);
+                    preCarregarProximoVideoSilenciosamente();
+
+                    // 2. Segundo timer: Efetua a troca visual exata quando o vídeo atual terminar
+                    screensaverInterval = setTimeout(() => {
+                        carregarProximoVideoPixabay();
+                    }, duracaoRestanteAteFim);
+
+                }, tempoParaAntecipar);
             }
         }).catch(e => {
             console.error("Erro ao reproduzir vídeo do pool:", e);
@@ -1537,6 +1548,25 @@ async function carregarProximoVideoPixabay() {
         if (screensaverInterval) clearTimeout(screensaverInterval);
         carregarProximoVideoPixabay();
     };
+}
+
+function preCarregarProximoVideoSilenciosamente() {
+    if (!isScreensaverActive || globalVideoPlaylist.length === 0) return;
+
+    // Apenas espreita o próximo vídeo sem o retirar definitivamente da playlist ainda 
+    // (ou podes usar o .shift() se preferires retirá-lo já)
+    const videoObj = globalVideoPlaylist[0]; 
+    if (!videoObj) return;
+
+    const videoUrl = videoObj.videos.large ? videoObj.videos.large.url : videoObj.videos.medium.url;
+
+    // Define a tag oposta à que está a tocar atualmente
+    const vidProximo = activeMediaTag === 1 ? ssVid2 : ssVid1;
+
+    // Apenas carrega os dados para o buffer em background, mantendo-se invisível e sem dar play
+    vidProximo.src = videoUrl;
+    vidProximo.load();
+    console.log(`Pré-carregamento de buffer iniciado para o vídeo ID: ${videoObj.id}`);
 }
 
 async function inicializarPoolVideos() {
