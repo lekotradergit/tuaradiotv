@@ -1320,7 +1320,7 @@ const SOURCESPLASH_API_KEY = "ss_ERwVP3SaJpsdRtmyWiu2ZIdn9B2Wbq6cdeghHFt7";
 let inactivityTimer = null;
 let screensaverInterval = null;
 let isScreensaverActive = false;
-const INACTIVITY_LIMIT_MS = 5000; // 20 segundos de inatividade
+const INACTIVITY_LIMIT_MS = 20000; // 20 segundos de inatividade
 const MEDIA_INTERVAL_MS = 20000;   // 20 segundos por imagem
 
 // ==========================================
@@ -1515,7 +1515,7 @@ async function carregarProximoVideoPixabay() {
             if (isScreensaverActive) {
                 if (screensaverInterval) clearTimeout(screensaverInterval);
                 
-                const tempoEspera = Math.max(duracaoVideoMs - 2000, 5000); 
+                const tempoEspera = Math.max(duracaoVideoMs - 500, 5000); 
                 screensaverInterval = setTimeout(() => {
                     carregarProximoVideoPixabay();
                 }, tempoEspera);
