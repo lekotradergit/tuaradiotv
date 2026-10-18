@@ -1575,7 +1575,7 @@ async function inicializarPoolVideos() {
         // 4. Filtra apenas vídeos Full HD horizontais e limpos
         let videosValidos = todosOsVideosBrutos.filter(v => {
             const formatoLarge = v.videos && v.videos.large;
-            const ehHorizontal = formatoLarge && formatoLarge.width >= 1920 && formatoLarge.width > formatoLarge.height;
+            const ehHorizontal = formatoLarge && formatoLarge.width === 1920 && formatoLarge.width > formatoLarge.height;
             const naoRepetido = !historicoVideosIds.includes(v.id);
             return ehHorizontal && naoRepetido;
         });
