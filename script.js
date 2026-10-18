@@ -1459,13 +1459,9 @@ function carregarProximaImagemScreensaver() {
     tempImg.src = imageUrl;
 }
 
-// ==========================================
-// MÓDULO DE VÍDEOS (Pixabay API - Apenas Full HD / 4K Horizontais)
-// ==========================================
 async function carregarProximoVideoPixabay() {
     if (!isScreensaverActive) return;
 
-    // Se por algum motivo o pool esvaziar, tenta recarregá-lo e usa imagens como fallback temporário
     if (globalVideoPlaylist.length === 0) {
         console.warn("Pool de vídeos vazio. A recarregar em background...");
         inicializarPoolVideos();
@@ -1473,21 +1469,19 @@ async function carregarProximoVideoPixabay() {
         return;
     }
 
-    // Se restarem menos de 10 vídeos na playlist, recarrega o pool silenciosamente em background
     if (globalVideoPlaylist.length < 10 && !isFetchingPool) {
         inicializarPoolVideos();
     }
 
-    // Retira o próximo vídeo da nossa lista em memória
+    // Retira o próximo vídeo preparado do array
     const videoObj = globalVideoPlaylist.shift();
 
-    // Regista no histórico recente (mantém os últimos 50 IDs)
     historicoVideosIds.push(videoObj.id);
     if (historicoVideosIds.length > 50) {
         historicoVideosIds.shift();
     }
 
-    const videoUrl = videoObj.videos.large ? videoObj.videos.large.url : videoObj.videos.medium.url;
+    const videoUrl = videoObj.url; // URL otimizado já filtrado em Full HD
 
     const vidAlvo = activeMediaTag === 1 ? ssVid2 : ssVid1;
     const vidAtual = activeMediaTag === 1 ? ssVid1 : ssVid2;
@@ -1502,7 +1496,7 @@ async function carregarProximoVideoPixabay() {
         videoIniciado = true;
 
         const duracaoVideoMs = (vidAlvo.duration || 15) * 1000;
-        console.log(`A reproduzir vídeo do Pool [ID: ${videoObj.id}] - Duração: ${vidAlvo.duration}s | Restantes no Pool: ${globalVideoPlaylist.length}`);
+        console.log(`A reproduzir vídeo otimizado [ID: ${videoObj.id}] - Duração: ${vidAlvo.duration}s`);
 
         vidAlvo.play().then(() => {
             vidAlvo.classList.add('active');
@@ -1552,7 +1546,6 @@ async function inicializarPoolVideos() {
         // 2. Cria as promessas de requisição em paralelo para cada tema (per_page=200)
         const promessasFetch = temasSelecionados.map(async (tema) => {
             const temaFormatado = tema.replace(/ /g, '+');
-            // Alterna a página aleatoriamente (1 ou 2) para diversificar ainda mais
             const pagina = Math.floor(Math.random() * 2) + 1;
             const urlApi = `https://pixabay.com/api/videos/?key=${PIXABAY_API_KEY}&q=${temaFormatado}&page=${pagina}&per_page=200&video_type=film`;
 
@@ -1566,29 +1559,52 @@ async function inicializarPoolVideos() {
             }
         });
 
-        // Aguarda todos os pedidos terminarem em paralelo
         const resultados = await Promise.all(promessasFetch);
-        
-        // 3. Junta todos os resultados num único array plano
         let todosOsVideosBrutos = resultados.flat();
 
-        // 4. Filtra apenas vídeos Full HD horizontais e limpos
-        let videosValidos = todosOsVideosBrutos.filter(v => {
-            const formatoLarge = v.videos && v.videos.large;
-            const ehHorizontal = formatoLarge && formatoLarge.width === 1920 && formatoLarge.width > formatoLarge.height;
-            const naoRepetido = !historicoVideosIds.includes(v.id);
-            return ehHorizontal && naoRepetido;
-        });
-
-        // Se o filtro estrito for muito restritivo, aceita qualquer formato large disponível
-        if (videosValidos.length === 0) {
-            videosValidos = todosOsVideosBrutos.filter(v => v.videos && v.videos.large);
+        // Função auxiliar interna para detetar e extrair a versão exata Full HD (1920x1080) horizontal
+        function extrairUrlFullHD(videosObj) {
+            if (!videosObj) return null;
+            // Ordem de prioridade onde a Pixabay costuma guardar o Full HD
+            const variantes = ['large', 'medium', 'small', 'tiny'];
+            
+            for (let i = 0; i < variantes.length; i++) {
+                const v = videosObj[variantes[i]];
+                if (v && v.width === 1920 && v.height === 1080) {
+                    return v.url;
+                }
+            }
+            
+            // Fallback secundário: caso não seja exato 1920x1080, procura qualquer horizontal limpo perto disso
+            for (let i = 0; i < variantes.length; i++) {
+                const v = videosObj[variantes[i]];
+                if (v && v.width >= 1280 && v.width > v.height) {
+                    return v.url;
+                }
+            }
+            return null;
         }
 
-        // 5. Embaralha (Shuffle) toda a lista gigante para garantir aleatoriedade total
+        // 4. Mapeia e filtra apenas vídeos que tenham um URL Full HD válido e não repetidos
+        let videosValidos = [];
+        todosOsVideosBrutos.forEach(v => {
+            if (!v.videos) return;
+            const urlIdeal = extrairUrlFullHD(v.videos);
+            const naoRepetido = !historicoVideosIds.includes(v.id);
+
+            if (urlIdeal && naoRepetido) {
+                // Guardamos já o URL limpo e mapeado dentro do objeto para facilitar o uso no player
+                videosValidos.push({
+                    id: v.id,
+                    url: urlIdeal
+                });
+            }
+        });
+
+        // 5. Embaralha (Shuffle) toda a lista para garantir aleatoriedade total
         globalVideoPlaylist = videosValidos.sort(() => Math.random() - 0.5);
 
-        console.log(`Pool Global de Vídeos pronto! Total carregado: ${globalVideoPlaylist.length} vídeos.`);
+        console.log(`Pool Global de Vídeos pronto! Total carregado em Full HD otimizado: ${globalVideoPlaylist.length} vídeos.`);
     } catch (erro) {
         console.error("Erro crítico ao montar o Pool de Vídeos:", erro);
     } finally {
