@@ -719,3 +719,23 @@ video::-webkit-media-controls-play-button {
 .ss-media {
     background-color: #000 !important;
 }
+
+
+/* Estilo base para os players de vídeo do screensaver */
+#ssVid1, #ssVid2 {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    object-fit: cover;
+    opacity: 0;
+    transition: opacity 0.5s ease-in-out; /* Transição suave de fade */
+    z-index: 1;
+}
+
+/* Quando o vídeo ganha a classe active, ele torna-se totalmente visível */
+#ssVid1.active, #ssVid2.active {
+    opacity: 1;
+    z-index: 2;
+}

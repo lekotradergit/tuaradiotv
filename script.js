@@ -1503,24 +1503,28 @@ async function carregarProximoVideoPixabay() {
 function executarTrocaImediata(vidAlvo, vidAtual, videoId) {
     if (!isScreensaverActive) return;
 
-    vidAlvo.play().then(() => {
-        // Efetua a troca visual e sonora instantânea
-        vidAlvo.classList.add('active');
-        vidAtual.classList.remove('active');
-        vidAtual.pause();
-        vidAtual.removeAttribute('src');
-        vidAtual.load();
+    // Garante que o vídeo está explicitamente mudo para evitar restrições de autoplay da TV
+    vidAlvo.muted = true;
 
-        esconderCamadaImagens();
-        activeMediaTag = activeMediaTag === 1 ? 2 : 1;
+    vidAlvo.play().then(() => {
+        // Pequeno atraso visual impercetível (50ms) para deixar o hardware renderizar o primeiro fotograma 
+        // antes de o tornar visível, cortando o "piscar" do play gigante
+        setTimeout(() => {
+            if (!isScreensaverActive) return;
+            vidAlvo.classList.add('active');
+            vidAtual.classList.remove('active');
+            vidAtual.pause();
+            vidAtual.removeAttribute('src');
+            vidAtual.load();
+
+            esconderCamadaImagens();
+            activeMediaTag = activeMediaTag === 1 ? 2 : 1;
+        }, 50);
 
         console.log(`► Transição suave concluída para o vídeo ID: ${videoId}`);
 
-        // Assim que este vídeo começa a tocar, já podemos engatilhar o carregamento do PRÓXIMO em background
         const duracaoMs = (vidAlvo.duration && !isNaN(vidAlvo.duration) ? vidAlvo.duration : 15) * 1000;
-        
-        // Antecipa o carregamento do próximo 3 segundos antes deste terminar
-        const tempoAntecipacao = Math.max(duracaoMs - 10000, 2000);
+        const tempoAntecipacao = Math.max(duracaoMs - 3000, 2000);
 
         if (screensaverInterval) clearTimeout(screensaverInterval);
         
