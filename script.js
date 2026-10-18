@@ -1520,7 +1520,7 @@ function executarTrocaImediata(vidAlvo, vidAtual, videoId) {
         const duracaoMs = (vidAlvo.duration && !isNaN(vidAlvo.duration) ? vidAlvo.duration : 15) * 1000;
         
         // Antecipa o carregamento do próximo 3 segundos antes deste terminar
-        const tempoAntecipacao = Math.max(duracaoMs - 3000, 2000);
+        const tempoAntecipacao = Math.max(duracaoMs - 10000, 2000);
 
         if (screensaverInterval) clearTimeout(screensaverInterval);
         
