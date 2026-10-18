@@ -1381,19 +1381,45 @@ function desativarScreensaver() {
     if (!isScreensaverActive) return;
     isScreensaverActive = false;
 
+    // 1. Limpa qualquer intervalo ou temporizador ativo do screensaver
     if (screensaverInterval) {
         clearInterval(screensaverInterval);
         screensaverInterval = null;
     }
 
+    // 2. Esconde o overlay visualmente
     if (screensaverOverlay) {
         screensaverOverlay.classList.remove('visible');
         screensaverOverlay.classList.add('hidden');
     }
 
-    // Pausa e limpa os vídeos se estiverem a ser usados para poupar recursos
-    if (typeof ssVid1 !== 'undefined' && ssVid1) { ssVid1.pause(); ssVid1.src = ''; }
-    if (typeof ssVid2 !== 'undefined' && ssVid2) { ssVid2.pause(); ssVid2.src = ''; }
+    // 3. Limpeza profunda e rigorosa dos players de vídeo para evitar lixo em cache ou estados presos
+    if (typeof ssVid1 !== 'undefined' && ssVid1) {
+        ssVid1.pause();
+        ssVid1.currentTime = 0;
+        ssVid1.removeAttribute('src');
+        ssVid1.load();
+        ssVid1.classList.remove('active');
+        ssVid1.oncanplaythrough = null;
+        ssVid1.onerror = null;
+        ssVid1.onended = null;
+    }
+
+    if (typeof ssVid2 !== 'undefined' && ssVid2) {
+        ssVid2.pause();
+        ssVid2.currentTime = 0;
+        ssVid2.removeAttribute('src');
+        ssVid2.load();
+        ssVid2.classList.remove('active');
+        ssVid2.oncanplaythrough = null;
+        ssVid2.onerror = null;
+        ssVid2.onended = null;
+    }
+
+    // 4. Reseta a tag ativa para o ponto de partida
+    activeMediaTag = 1;
+
+    console.log("Screensaver desativado e recursos de vídeo limpos com sucesso.");
 }
 
 // Direcionador centralizado com base no MEDIA_TYPE escolhido
@@ -1405,62 +1431,13 @@ function carregarProximaMidiaScreensaver() {
     }
 }
 
-// ------------------------------------------
-// MÓDULO DE IMAGENS (Picsum / SourceSplash)
-// ------------------------------------------
-function carregarProximaImagemScreensaver() {
-    const imgAlvo = activeMediaTag === 1 ? ssImg2 : ssImg1;
-    const imgAtual = activeMediaTag === 1 ? ssImg1 : ssImg2;
-    let imageUrl = '';
-
-    if (IMAGE_PROVIDER === 'picsum') {
-        imageUrl = `https://picsum.photos/1920/1080?random=${Date.now()}`;
-    } else {
-        let temaEscolhido;
-        do {
-            temaEscolhido = ssTemasAmplos[Math.floor(Math.random() * ssTemasAmplos.length)];
-        } while (historicoTemas.includes(temaEscolhido) && historicoTemas.length < ssTemasAmplos.length - 1);
-
-        historicoTemas.push(temaEscolhido);
-        if (historicoTemas.length > 5) historicoTemas.shift();
-
-        const randomSeed = Math.random().toString(36).substring(2, 9);
-        imageUrl = `https://www.sourcesplash.com/i/random?q=${temaEscolhido}&seed=${randomSeed}&_=${Date.now()}`;
-    }
-
-    const tempImg = new Image();
-    
-    tempImg.onload = () => {
-        if (IMAGE_PROVIDER === 'sourcesplash' && tempImg.naturalWidth === 800 && tempImg.naturalHeight === 600) {
-            tempImg.onload = null;
-            tempImg.onerror = null;
-            setTimeout(carregarProximaImagemScreensaver, 500);
-            return;
-        }
-
-        imgAlvo.src = tempImg.src;
-        imgAlvo.classList.add('active');
-        imgAtual.classList.remove('active');
-
-        // Garante que esconde os vídeos caso estivessem ativos
-        esconderCamadaVideos();
-
-        activeMediaTag = activeMediaTag === 1 ? 2 : 1;
-        tempImg.onload = null;
-        tempImg.onerror = null;
-    };
-
-    tempImg.onerror = (err) => {
-        tempImg.onload = null;
-        tempImg.onerror = null;
-        setTimeout(carregarProximaImagemScreensaver, 1000);
-    };
-
-    tempImg.src = imageUrl;
-}
-
 async function carregarProximoVideoPixabay() {
     if (!isScreensaverActive) return;
+
+    if (screensaverInterval) {
+        clearTimeout(screensaverInterval);
+        screensaverInterval = null;
+    }
 
     if (globalVideoPlaylist.length === 0) {
         console.warn("Pool de vídeos vazio. A recarregar em background...");
@@ -1473,64 +1450,90 @@ async function carregarProximoVideoPixabay() {
         inicializarPoolVideos();
     }
 
-    // Retira o próximo vídeo preparado do array
     const videoObj = globalVideoPlaylist.shift();
-
     historicoVideosIds.push(videoObj.id);
-    if (historicoVideosIds.length > 50) {
-        historicoVideosIds.shift();
-    }
+    if (historicoVideosIds.length > 50) historicoVideosIds.shift();
 
-    const videoUrl = videoObj.url; // URL otimizado já filtrado em Full HD
+    const videoUrl = videoObj.url; // URL Full HD otimizado
 
+    // Define qual é a tag alvo (inativa) e a atual (ativa)
     const vidAlvo = activeMediaTag === 1 ? ssVid2 : ssVid1;
     const vidAtual = activeMediaTag === 1 ? ssVid1 : ssVid2;
 
+    // Limpa ouvintes antigos para evitar sobreposição
+    vidAlvo.oncanplaythrough = null;
+    vidAlvo.onerror = null;
+
+    // 1. Atribui o URL e força o pré-carregamento em background na tag oculta
     vidAlvo.src = videoUrl;
     vidAlvo.load();
 
-    let videoIniciado = false;
+    let videoProntoParaTocar = false;
 
+    // Quando o browser avisar que já tem dados suficientes para rodar sem travar
     vidAlvo.oncanplaythrough = () => {
-        if (videoIniciado || !isScreensaverActive) return;
-        videoIniciado = true;
+        if (videoProntoParaTocar || !isScreensaverActive) return;
+        videoProntoParaTocar = true;
 
-        const duracaoVideoMs = (vidAlvo.duration || 15) * 1000;
-        console.log(`A reproduzir vídeo otimizado [ID: ${videoObj.id}] - Duração: ${vidAlvo.duration}s`);
+        console.log(`[Pré-buffer OK] Vídeo ID: ${videoObj.id} pronto na cache.`);
 
-        vidAlvo.play().then(() => {
-            vidAlvo.classList.add('active');
-            vidAtual.classList.remove('active');
-            vidAtual.pause();
-
-            esconderCamadaImagens();
-            activeMediaTag = activeMediaTag === 1 ? 2 : 1;
-
-            if (isScreensaverActive) {
-                if (screensaverInterval) clearTimeout(screensaverInterval);
-                
-                const tempoEspera = Math.max(duracaoVideoMs - 50, 5000); 
-                screensaverInterval = setTimeout(() => {
-                    carregarProximoVideoPixabay();
-                }, tempoEspera);
-            }
-        }).catch(e => {
-            console.error("Erro ao reproduzir vídeo do pool:", e);
-            carregarProximoVideoPixabay();
-        });
-    };
-
-    vidAlvo.onstalled = () => {
-        console.warn("Vídeo travou por buffer/rede. A passar para o próximo...");
-        if (screensaverInterval) clearTimeout(screensaverInterval);
-        carregarProximoVideoPixabay();
+        // Se for o primeiro vídeo de todos a arrancar
+        if (!vidAtual.classList.contains('active')) {
+            executarTrocaImediata(vidAlvo, vidAtual, videoObj.id);
+        }
     };
 
     vidAlvo.onerror = () => {
-        console.error("Erro no ficheiro de vídeo. A avançar...");
-        if (screensaverInterval) clearTimeout(screensaverInterval);
+        console.warn("Erro ao carregar o vídeo. A avançar...");
         carregarProximoVideoPixabay();
     };
+
+    // Se já houver um vídeo a tocar, usamos o evento 'ended' nativo dele para fazer a transição perfeita.
+    // Como o 'vidAlvo' já está carregado em background, a troca é instantânea, eliminando o ecrã preto!
+    if (vidAtual.classList.contains('active')) {
+        vidAtual.onended = () => {
+            vidAtual.onended = null; // Limpa o evento
+            if (isScreensaverActive) {
+                executarTrocaImediata(vidAlvo, vidAtual, videoObj.id);
+            }
+        };
+    }
+}
+
+function executarTrocaImediata(vidAlvo, vidAtual, videoId) {
+    if (!isScreensaverActive) return;
+
+    vidAlvo.play().then(() => {
+        // Efetua a troca visual e sonora instantânea
+        vidAlvo.classList.add('active');
+        vidAtual.classList.remove('active');
+        vidAtual.pause();
+        vidAtual.removeAttribute('src');
+        vidAtual.load();
+
+        esconderCamadaImagens();
+        activeMediaTag = activeMediaTag === 1 ? 2 : 1;
+
+        console.log(`► Transição suave concluída para o vídeo ID: ${videoId}`);
+
+        // Assim que este vídeo começa a tocar, já podemos engatilhar o carregamento do PRÓXIMO em background
+        const duracaoMs = (vidAlvo.duration && !isNaN(vidAlvo.duration) ? vidAlvo.duration : 15) * 1000;
+        
+        // Antecipa o carregamento do próximo 3 segundos antes deste terminar
+        const tempoAntecipacao = Math.max(duracaoMs - 3000, 2000);
+
+        if (screensaverInterval) clearTimeout(screensaverInterval);
+        
+        screensaverInterval = setTimeout(() => {
+            if (isScreensaverActive) {
+                carregarProximoVideoPixabay();
+            }
+        }, tempoAntecipacao);
+
+    }).catch(e => {
+        console.warn("Erro ao efetuar o play na troca:", e);
+        carregarProximoVideoPixabay();
+    });
 }
 
 async function inicializarPoolVideos() {
