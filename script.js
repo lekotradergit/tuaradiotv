@@ -1459,8 +1459,6 @@ function carregarProximaImagemScreensaver() {
     tempImg.src = imageUrl;
 }
 
-
-let urlUnica = "";
 async function carregarProximoVideoPixabay() {
     if (!isScreensaverActive) return;
 
@@ -1488,14 +1486,7 @@ async function carregarProximoVideoPixabay() {
     const vidAlvo = activeMediaTag === 1 ? ssVid2 : ssVid1;
     const vidAtual = activeMediaTag === 1 ? ssVid1 : ssVid2;
 
-    if (urlUnica === ""){
-        urlUnica = videoUrl;
-        vidAlvo.src = videoUrl;        
-    }else{
-        vidAlvo.src = urlUnica;
-    }
-    
-    //vidAlvo.src = videoUrl;
+    vidAlvo.src = videoUrl;
     vidAlvo.load();
 
     let videoIniciado = false;
