@@ -11,10 +11,11 @@ let isFetchingPool = false;        // Evita chamadas duplicadas simultâneas
 const pixabayTemas = [
     'flowers',
     'fruits',
-    'nature cinematic landscape',
-    'wetdrops',
-    'sea',
-    'snow',
+    'nature cinematic',
+    'boat on water',
+    'wet drops',
+    'seagulls',
+    'snowfall',
     'forest river drone',
     'ocean waves sunset',
     'mountains clouds aerial',
@@ -26,6 +27,7 @@ const pixabayTemas = [
     'fisches',
     'turtles',
     'birds',
+    'lions',
     'animals',
     'tropical beach aerial'
 ];
